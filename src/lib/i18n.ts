@@ -116,34 +116,34 @@ export const siteCopy = {
     availability: "Availability",
     snapshot: "Snapshot",
     snapshotText:
-      "Full-stack engineer with a strong support and troubleshooting background.",
+      "Strong on debugging, implementation quality, and support-aware delivery.",
     highlights: [
-      "Full-stack development",
+      "Product execution",
       "Advanced troubleshooting",
-      "Deployment-aware engineering"
+      "Delivery with operational context"
     ],
     about: "About",
     aboutText:
-      "Full-stack engineer based in Buenos Aires, working across software, support, and practical systems.",
+      "Built around execution, clarity, and systems that hold up beyond the first release.",
     focusAreas: "Focus areas",
     whoIAm: "Who I am",
-    whoIAmTitle: "Software engineer based in Buenos Aires",
+    whoIAmTitle: "Built around product work and technical problem-solving",
     whoIAmText:
-      "My background combines engineering, support, and troubleshooting. That mix helps when products need solid implementation and clear operational thinking.",
+      "My background blends delivery, support, and troubleshooting. That mix is useful when a product needs clean implementation and someone who can think past the happy path.",
     whatIDo: "What I do",
     howIWork: "How I work",
     services: [
       {
-        title: "Full-Stack Web Development",
-        description: "Scalable applications across frontend and backend."
+        title: "Interface and Product Buildout",
+        description: "Frontend systems and user-facing flows that are clear, fast, and maintainable."
       },
       {
-        title: "Technical Problem-Solving & Optimization",
-        description: "Debugging, optimization, and maintainable systems."
+        title: "Debugging and Stabilization",
+        description: "Problem isolation, cleanup, and improvement work where reliability matters."
       },
       {
-        title: "IT & System Support",
-        description: "Practical support and systems experience beyond pure development."
+        title: "Operational and Support Context",
+        description: "Engineering decisions shaped by real support pressure, systems work, and handoff reality."
       }
     ],
     myWork: "My work",
@@ -252,34 +252,34 @@ export const siteCopy = {
     availability: "Disponibilidad",
     snapshot: "Resumen",
     snapshotText:
-      "Ingeniero full-stack con una base sólida en soporte y resolución de problemas.",
+      "Fuerte en debugging, calidad de implementación y entregas con mirada operativa.",
     highlights: [
-      "Desarrollo full-stack",
+      "Ejecución de producto",
       "Resolución avanzada de problemas",
-      "Ingeniería con visión de despliegue"
+      "Entrega con contexto operativo"
     ],
     about: "Sobre mí",
     aboutText:
-      "Ingeniero full-stack en Buenos Aires, trabajando entre software, soporte y sistemas prácticos.",
+      "Enfocado en ejecución, claridad y sistemas que funcionen bien después del primer release.",
     focusAreas: "Áreas de enfoque",
     whoIAm: "Quién soy",
-    whoIAmTitle: "Ingeniero de software en Buenos Aires",
+    whoIAmTitle: "Orientado a producto y resolución técnica real",
     whoIAmText:
-      "Mi perfil combina ingeniería, soporte y troubleshooting. Eso ayuda cuando un producto necesita buena implementación y claridad operativa.",
+      "Mi perfil mezcla entrega, soporte y troubleshooting. Eso suma cuando un producto necesita buena implementación y alguien que piense más allá del caso ideal.",
     whatIDo: "Qué hago",
     howIWork: "Cómo trabajo",
     services: [
       {
-        title: "Desarrollo Web Full-Stack",
-        description: "Aplicaciones escalables en frontend y backend."
+        title: "Interfaces y construcción de producto",
+        description: "Sistemas frontend y flujos de usuario claros, rápidos y mantenibles."
       },
       {
-        title: "Resolución de Problemas y Optimización",
-        description: "Debugging, optimización y sistemas mantenibles."
+        title: "Debugging y estabilización",
+        description: "Aislamiento de problemas, cleanup y mejoras donde la confiabilidad importa."
       },
       {
-        title: "Soporte IT y Sistemas",
-        description: "Experiencia práctica en soporte y sistemas más allá del desarrollo."
+        title: "Contexto operativo y de soporte",
+        description: "Decisiones de ingeniería influenciadas por soporte real, sistemas y handoff."
       }
     ],
     myWork: "Mi trabajo",
