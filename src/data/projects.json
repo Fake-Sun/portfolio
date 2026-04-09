@@ -1,0 +1,75 @@
+[
+  {
+    "slug": "shoppy-dashboard",
+    "title": "Shoppy Dashboard",
+    "tagline": "Responsive e-commerce admin dashboard built for operational visibility and day-to-day store management.",
+    "year": "2025",
+    "category": "Admin Dashboard",
+    "status": "Completed",
+    "impact": "Packaged multiple admin workflows into one customizable interface.",
+    "summary": "Shoppy is an e-commerce admin dashboard focused on helping teams manage orders, customers, employees, content, and reporting from a single interface.",
+    "challenge": "Admin tools often become cluttered quickly when they try to handle analytics, scheduling, content editing, and data management in one place.",
+    "solution": "I built a responsive dashboard that keeps the information architecture clean while still supporting tables, charts, calendar workflows, kanban tracking, editing tools, and theming.",
+    "stack": ["React.js", "Tailwind CSS", "Syncfusion"],
+    "services": ["Frontend development", "Dashboard UX", "Component integration"],
+    "metrics": [
+      { "label": "Focus", "value": "Admin productivity" },
+      { "label": "Interface type", "value": "Responsive dashboard" },
+      { "label": "Modules", "value": "Tables, charts, calendar, kanban" }
+    ],
+    "links": [
+      { "label": "Portfolio reference", "href": "https://lucasmonzon.dev/" }
+    ],
+    "featured": true,
+    "accent": "radial-gradient(circle at 20% 20%, rgba(117, 211, 255, 0.28), transparent 35%), linear-gradient(135deg, #132238 0%, #0d1321 45%, #071018 100%)"
+  },
+  {
+    "slug": "tech-haven-ecommerce",
+    "title": "Tech Haven E-Commerce",
+    "tagline": "Full-stack e-commerce platform with storefront, CMS-backed product management, and Stripe checkout.",
+    "year": "2025",
+    "category": "Full-Stack Web App",
+    "status": "Production build available",
+    "impact": "Combined storefront, payments, content management, and order flows into one MERN application.",
+    "summary": "Tech Haven is a full-stack commerce platform built with the MERN stack, Payload CMS, and Stripe integration. It supports both a customer storefront and an admin-oriented content and product workflow.",
+    "challenge": "An e-commerce product has to balance customer experience, payment reliability, product management, SEO, media handling, and authentication without feeling fragmented.",
+    "solution": "I used a full-stack architecture with CMS-driven product control, secure authentication, persistent shopping flows, and Stripe checkout to create a cohesive commerce experience.",
+    "stack": ["MongoDB", "Express", "React", "Node.js", "Payload CMS", "Stripe"],
+    "services": ["Full-stack development", "CMS integration", "Payment integration"],
+    "metrics": [
+      { "label": "Architecture", "value": "MERN + PayloadCMS" },
+      { "label": "Checkout", "value": "Stripe" },
+      { "label": "Audience", "value": "Customers + admins" }
+    ],
+    "links": [
+      { "label": "Live demo", "href": "https://ecommerce-8ljx.onrender.com/" },
+      { "label": "Portfolio reference", "href": "https://lucasmonzon.dev/" }
+    ],
+    "featured": true,
+    "accent": "radial-gradient(circle at 70% 10%, rgba(118, 255, 198, 0.28), transparent 30%), linear-gradient(145deg, #08111d 0%, #132238 55%, #173b44 100%)"
+  },
+  {
+    "slug": "snippet-assistant",
+    "title": "Snippet Assistant",
+    "tagline": "Chrome extension for creating, organizing, and inserting reusable snippets directly from the browser.",
+    "year": "2025",
+    "category": "Browser Extension",
+    "status": "Completed",
+    "impact": "Built as a practical workflow tool to reduce repetitive copy-paste work for day-to-day communication.",
+    "summary": "Snippet Assistant is a browser extension developed as a personal challenge to learn Vue 3, Vite, and TypeScript while solving a real productivity problem.",
+    "challenge": "Manual snippet handling becomes slow and error-prone when teams reuse the same messages, templates, or fragments across repetitive workflows.",
+    "solution": "I designed the extension around quick creation, editing, folder organization, breadcrumb navigation, and fast insertion so snippets stay usable in real work instead of turning into clutter.",
+    "stack": ["Vue 3", "Vite", "TypeScript", "Chrome Extension APIs", "Local Storage"],
+    "services": ["Product prototyping", "Frontend development", "Browser extension UX"],
+    "metrics": [
+      { "label": "Storage", "value": "Local-first" },
+      { "label": "Core feature", "value": "Snippet insertion" },
+      { "label": "Organization", "value": "Folders + breadcrumbs" }
+    ],
+    "links": [
+      { "label": "Portfolio reference", "href": "https://lucasmonzon.dev/" }
+    ],
+    "featured": false,
+    "accent": "radial-gradient(circle at 50% 0%, rgba(255, 120, 120, 0.35), transparent 28%), linear-gradient(135deg, #1a0c12 0%, #0c1827 50%, #111d2e 100%)"
+  }
+]

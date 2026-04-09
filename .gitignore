@@ -3,5 +3,5 @@ node_modules
 *.log
 .env.local
 dist
-data/
+/data/
 tsconfig.tsbuildinfo
