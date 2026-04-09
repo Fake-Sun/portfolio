@@ -8,6 +8,7 @@ import {
   getPortfolioSettings,
   getProjects,
   hasAdminSecretConfigured,
+  isPersistenceAvailable,
   validateAdminSession
 } from "@/lib/portfolio";
 import { notFound } from "next/navigation";
@@ -27,6 +28,19 @@ export default async function AdminPage({ params }: AdminPageProps) {
 
   const locale = lang as Locale;
   const copy = siteCopy[locale];
+
+  if (!isPersistenceAvailable()) {
+    return (
+      <section className="admin-auth-shell">
+        <div className="section-heading">
+          <span className="eyebrow">Portfolio CMS</span>
+          <h1>{copy.adminTitle as string}</h1>
+          <p>{copy.adminStorageDisabled as string}</p>
+        </div>
+      </section>
+    );
+  }
+
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(adminSessionCookieName)?.value ?? "";
   const [hasAdminSecret, isAuthenticated] = await Promise.all([

@@ -145,7 +145,11 @@ function normalizeSettingsTranslations(
 
 declare global {
   var __portfolioDb: DatabaseSync | undefined;
+  var __portfolioDbUnavailable: boolean | undefined;
 }
+
+const storageUnavailableMessage =
+  "Persistent admin storage is unavailable in this deployment. Use a hosted database and object storage for production writes.";
 
 function ensureDataDir() {
   if (!existsSync(dataDir)) {
@@ -153,17 +157,34 @@ function ensureDataDir() {
   }
 }
 
-function getDb() {
+function getDbOrNull() {
+  if (globalThis.__portfolioDbUnavailable) {
+    return null;
+  }
+
   if (globalThis.__portfolioDb) {
     ensureSchema(globalThis.__portfolioDb);
     return globalThis.__portfolioDb;
   }
 
-  ensureDataDir();
-  const db = new DatabaseSync(dbPath);
-  ensureSchema(db);
-  seedDatabase(db);
-  globalThis.__portfolioDb = db;
+  try {
+    ensureDataDir();
+    const db = new DatabaseSync(dbPath);
+    ensureSchema(db);
+    seedDatabase(db);
+    globalThis.__portfolioDb = db;
+    return db;
+  } catch {
+    globalThis.__portfolioDbUnavailable = true;
+    return null;
+  }
+}
+
+function requireDb() {
+  const db = getDbOrNull();
+  if (!db) {
+    throw new Error(storageUnavailableMessage);
+  }
   return db;
 }
 
@@ -560,6 +581,55 @@ function deserializeSettings(row: DbSettingsRow): PortfolioSettings {
   };
 }
 
+function getSeedProjects(): Project[] {
+  return seedProjects.map((project) => ({
+    slug: project.slug,
+    title: project.title,
+    tagline: project.tagline,
+    year: project.year,
+    category: project.category,
+    status: project.status,
+    impact: project.impact,
+    summary: project.summary,
+    challenge: project.challenge,
+    solution: project.solution,
+    client:
+      project.slug === "shoppy-dashboard"
+        ? "Admin dashboard concept"
+        : project.slug === "tech-haven-ecommerce"
+          ? "Tech Haven"
+          : "Internal productivity tool",
+    role:
+      project.slug === "snippet-assistant"
+        ? "Product builder + frontend engineer"
+        : "Full-stack developer",
+    duration: project.slug === "tech-haven-ecommerce" ? "End-to-end build" : "Product case study",
+    coverImage:
+      project.slug === "shoppy-dashboard"
+        ? "/uploads/Portfolio-01.png"
+        : project.slug === "tech-haven-ecommerce"
+          ? "/uploads/portfolio-02.png"
+          : "/uploads/portfolio-03.png",
+    galleryImages:
+      project.slug === "shoppy-dashboard"
+        ? ["/uploads/shoppy-details.jpg"]
+        : project.slug === "tech-haven-ecommerce"
+          ? ["/uploads/ecommerce-details.jpg"]
+          : ["/uploads/snippet-extension-details.png", "/uploads/snippet-extension-details2.png"],
+    stack: project.stack,
+    services: project.services,
+    metrics: project.metrics,
+    links: project.links,
+    featured: project.featured,
+    accent: project.accent,
+    translations: getDefaultSpanishProjectTranslation(project.slug)
+  }));
+}
+
+export function isPersistenceAvailable() {
+  return Boolean(getDbOrNull());
+}
+
 export function parseProjectInput(payload: Record<string, unknown>): ProjectInput {
   const title = String(payload.title ?? "").trim();
   if (!title) {
@@ -633,17 +703,32 @@ export function parseSettingsInput(payload: Record<string, unknown>): PortfolioS
 }
 
 export async function getProjects() {
-  const rows = getDb().prepare("SELECT * FROM projects ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
+  const db = getDbOrNull();
+  if (!db) {
+    return getSeedProjects();
+  }
+
+  const rows = db.prepare("SELECT * FROM projects ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
   return rows.map(deserializeProject);
 }
 
 export async function getFeaturedProjects() {
-  const rows = getDb().prepare("SELECT * FROM projects WHERE featured = 1 ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
+  const db = getDbOrNull();
+  if (!db) {
+    return getSeedProjects().filter((project) => project.featured);
+  }
+
+  const rows = db.prepare("SELECT * FROM projects WHERE featured = 1 ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
   return rows.map(deserializeProject);
 }
 
 export async function getProjectBySlug(slug: string) {
-  const row = getDb().prepare("SELECT * FROM projects WHERE slug = ?").get(slug) as DbProjectRow | undefined;
+  const db = getDbOrNull();
+  if (!db) {
+    return getSeedProjects().find((project) => project.slug === slug);
+  }
+
+  const row = db.prepare("SELECT * FROM projects WHERE slug = ?").get(slug) as DbProjectRow | undefined;
   return row ? deserializeProject(row) : undefined;
 }
 
@@ -690,7 +775,7 @@ export async function upsertProject(input: ProjectInput) {
     }
   };
 
-  getDb()
+  requireDb()
     .prepare(`
       INSERT INTO projects (
         slug, title, tagline, year, category, status, impact, summary,
@@ -749,14 +834,19 @@ export async function upsertProject(input: ProjectInput) {
 }
 
 export async function deleteProject(slug: string) {
-  const result = getDb().prepare("DELETE FROM projects WHERE slug = ?").run(slug);
+  const result = requireDb().prepare("DELETE FROM projects WHERE slug = ?").run(slug);
   if (result.changes === 0) {
     throw new Error("Project not found.");
   }
 }
 
 export async function getPortfolioSettings() {
-  const row = getDb().prepare("SELECT * FROM portfolio_settings WHERE id = 1").get() as DbSettingsRow | undefined;
+  const db = getDbOrNull();
+  if (!db) {
+    return defaultSettings;
+  }
+
+  const row = db.prepare("SELECT * FROM portfolio_settings WHERE id = 1").get() as DbSettingsRow | undefined;
   return row ? deserializeSettings(row) : defaultSettings;
 }
 
@@ -790,7 +880,7 @@ export async function updatePortfolioSettings(input: PortfolioSettingsInput) {
     }
   };
 
-  getDb()
+  requireDb()
     .prepare(`
       UPDATE portfolio_settings
       SET
@@ -831,6 +921,10 @@ export async function updatePortfolioSettings(input: PortfolioSettingsInput) {
 }
 
 export async function saveUploadedFile(fileName: string, buffer: Buffer) {
+  if (!isPersistenceAvailable()) {
+    throw new Error(storageUnavailableMessage);
+  }
+
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
   await fs.mkdir(uploadsDir, { recursive: true });
   const filePath = path.join(uploadsDir, fileName);
@@ -839,7 +933,12 @@ export async function saveUploadedFile(fileName: string, buffer: Buffer) {
 }
 
 export async function hasAdminSecretConfigured() {
-  const row = getDb().prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
+  const db = getDbOrNull();
+  if (!db) {
+    return false;
+  }
+
+  const row = db.prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
   return Boolean(row?.secret_hash);
 }
 
@@ -851,11 +950,16 @@ export async function setAdminSecret(secret: string) {
   if (await hasAdminSecretConfigured()) {
     throw new Error("Admin secret is already configured.");
   }
-  getDb().prepare("INSERT INTO admin_config (id, secret_hash) VALUES (1, ?)").run(hashSecret(normalized));
+  requireDb().prepare("INSERT INTO admin_config (id, secret_hash) VALUES (1, ?)").run(hashSecret(normalized));
 }
 
 export async function verifyAdminSecret(secret: string) {
-  const row = getDb().prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
+  const db = getDbOrNull();
+  if (!db) {
+    return false;
+  }
+
+  const row = db.prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
   if (!row?.secret_hash) {
     return false;
   }
@@ -865,7 +969,7 @@ export async function verifyAdminSecret(secret: string) {
 export async function createAdminSession() {
   const token = randomBytes(32).toString("hex");
   const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 14;
-  getDb().prepare("INSERT INTO admin_sessions (token_hash, expires_at) VALUES (?, ?)").run(hashToken(token), expiresAt);
+  requireDb().prepare("INSERT INTO admin_sessions (token_hash, expires_at) VALUES (?, ?)").run(hashToken(token), expiresAt);
   return { token, expiresAt };
 }
 
@@ -873,12 +977,17 @@ export async function validateAdminSession(token: string) {
   if (!token) {
     return false;
   }
-  const row = getDb().prepare("SELECT token_hash, expires_at FROM admin_sessions WHERE token_hash = ?").get(hashToken(token)) as { token_hash: string; expires_at: number } | undefined;
+  const db = getDbOrNull();
+  if (!db) {
+    return false;
+  }
+
+  const row = db.prepare("SELECT token_hash, expires_at FROM admin_sessions WHERE token_hash = ?").get(hashToken(token)) as { token_hash: string; expires_at: number } | undefined;
   if (!row) {
     return false;
   }
   if (row.expires_at < Date.now()) {
-    getDb().prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
+    db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
     return false;
   }
   return true;
@@ -888,5 +997,10 @@ export async function deleteAdminSession(token: string) {
   if (!token) {
     return;
   }
-  getDb().prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
+  const db = getDbOrNull();
+  if (!db) {
+    return;
+  }
+
+  db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
 }

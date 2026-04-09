@@ -169,6 +169,8 @@ export const siteCopy = {
     adminTitle: "Content control room",
     adminIntro:
       "Update your profile, manage projects, and upload images without editing code.",
+    adminStorageDisabled:
+      "This deployment is running without durable local storage. Public content works, but admin editing is disabled here.",
     adminSecret: "Admin secret",
     adminSecretPlaceholder: "Required to save, delete, or upload",
     adminSetupText:
@@ -303,6 +305,8 @@ export const siteCopy = {
     adminTitle: "Panel de contenido",
     adminIntro:
       "Actualizá tu perfil, gestioná proyectos y subí imágenes sin editar código.",
+    adminStorageDisabled:
+      "Este despliegue se está ejecutando sin almacenamiento local persistente. El contenido público funciona, pero la edición admin está deshabilitada acá.",
     adminSecret: "Clave admin",
     adminSecretPlaceholder: "Requerida para guardar, borrar o subir",
     adminSetupText:
