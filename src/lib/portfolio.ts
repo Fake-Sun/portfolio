@@ -27,9 +27,9 @@ const defaultSettings: PortfolioSettings = {
   name: "Lucas Monzón",
   title: "Full Stack Software Engineer | IT Professional",
   intro:
-    "I work across product interfaces, backend systems, and technical operations, with a strong emphasis on reliability, debugging, and practical execution.",
+    "I build web applications and internal tools, and I bring hands-on experience from advanced customer support, technical troubleshooting, hosting, and deployment into the way I approach software.",
   about:
-    "My background combines software delivery, advanced troubleshooting, support workflows, and infrastructure-minded thinking. I am especially comfortable in environments where things have to work well, fail clearly, and be maintainable after launch.",
+    "My background combines software engineering with real support and operations work. Alongside JavaScript, React, Node.js, Python, Java, and databases, I have experience with Windows and Linux administration, AWS, Docker, DNS, SSL, and day-to-day technical problem solving. That mix makes me comfortable building product features while also thinking about reliability, maintenance, and the actual issues users run into.",
   email: "contact@lucasmonzon.dev",
   location: "Buenos Aires, AR",
   availability: "Available for freelance work and software engineering opportunities",
@@ -38,39 +38,39 @@ const defaultSettings: PortfolioSettings = {
   secondaryCtaLabel: "LinkedIn",
   secondaryCtaHref: "https://www.linkedin.com/in/lucasmonzon2911/",
   focusAreas: [
-    "Product-facing web applications",
-    "Debugging and performance work",
-    "Support-aware engineering",
-    "Systems and deployment context"
+    "Web applications and internal tools",
+    "Advanced troubleshooting and debugging",
+    "Hosting, deployment, and infrastructure context",
+    "Support-driven technical work"
   ],
   stats: [
     { label: "Base", value: "Buenos Aires" },
-    { label: "Primary work", value: "Product and platform implementation" },
+    { label: "Support track", value: "Customer support + L2 contingency" },
     { label: "Core stack", value: "JavaScript, React, Node.js" },
-    { label: "Additional edge", value: "AWS, Docker, support ops" }
+    { label: "Infra and ops", value: "AWS, Docker, DNS, SSL" }
   ],
   translations: {
     es: {
       name: "Lucas Monzón",
       title: "Ingeniero Full Stack | Profesional IT",
       intro:
-        "Trabajo entre interfaces de producto, sistemas backend y operación técnica, con foco fuerte en confiabilidad, debugging y ejecución práctica.",
+        "Construyo aplicaciones web y herramientas internas, y sumo experiencia real de soporte avanzado, troubleshooting técnico, hosting y despliegue a la forma en que abordo el software.",
       about:
-        "Mi perfil combina entrega de software, troubleshooting avanzado, flujos de soporte y una mirada orientada a infraestructura. Me siento especialmente cómodo en entornos donde las cosas tienen que funcionar bien, fallar con claridad y mantenerse después del lanzamiento.",
+        "Mi perfil combina ingeniería de software con trabajo real de soporte y operación. Además de JavaScript, React, Node.js, Python, Java y bases de datos, tengo experiencia en administración de Windows y Linux, AWS, Docker, DNS, SSL y resolución técnica del día a día. Esa mezcla me da comodidad para construir producto pensando también en confiabilidad, mantenimiento y los problemas reales que tienen los usuarios.",
       availability: "Disponible para freelance y oportunidades en ingeniería de software",
       primaryCtaLabel: "Escribime",
       secondaryCtaLabel: "LinkedIn",
       focusAreas: [
-        "Aplicaciones web orientadas a producto",
-        "Debugging y performance",
-        "Ingeniería con mirada de soporte",
-        "Sistemas y despliegue"
+        "Aplicaciones web y herramientas internas",
+        "Troubleshooting avanzado y debugging",
+        "Hosting, despliegue e infraestructura",
+        "Trabajo técnico con base en soporte"
       ],
       stats: [
         { label: "Base", value: "Buenos Aires" },
-        { label: "Trabajo principal", value: "Implementación de producto y plataforma" },
+        { label: "Recorrido en soporte", value: "Atención al cliente + soporte L2" },
         { label: "Stack principal", value: "JavaScript, React, Node.js" },
-        { label: "Diferencial", value: "AWS, Docker, soporte operativo" }
+        { label: "Infra y ops", value: "AWS, Docker, DNS, SSL" }
       ]
     }
   }

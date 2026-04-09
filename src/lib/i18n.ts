@@ -116,34 +116,34 @@ export const siteCopy = {
     availability: "Availability",
     snapshot: "Snapshot",
     snapshotText:
-      "Strong on debugging, implementation quality, and support-aware delivery.",
+      "Software engineer shaped by troubleshooting, customer support, and practical delivery.",
     highlights: [
-      "Product execution",
-      "Advanced troubleshooting",
-      "Delivery with operational context"
+      "Web applications and internal tools",
+      "L1/L2 support experience",
+      "Hosting and deployment context"
     ],
     about: "About",
     aboutText:
-      "Built around execution, clarity, and systems that hold up beyond the first release.",
+      "Grounded in software delivery, support workflows, and real operational problem solving.",
     focusAreas: "Focus areas",
     whoIAm: "Who I am",
-    whoIAmTitle: "Built around product work and technical problem-solving",
+    whoIAmTitle: "Software engineering with real support and operations experience",
     whoIAmText:
-      "My background blends delivery, support, and troubleshooting. That mix is useful when a product needs clean implementation and someone who can think past the happy path.",
+      "My experience is not limited to building interfaces. It also includes customer support, advanced issue handling, documentation, hosting, infrastructure, and the kind of technical follow-through that matters once software is already in use.",
     whatIDo: "What I do",
     howIWork: "How I work",
     services: [
       {
-        title: "Interface and Product Buildout",
-        description: "Frontend systems and user-facing flows that are clear, fast, and maintainable."
+        title: "Web Applications and Admin Tools",
+        description: "User-facing products, dashboards, and internal tools built with a strong focus on maintainability."
       },
       {
-        title: "Debugging and Stabilization",
-        description: "Problem isolation, cleanup, and improvement work where reliability matters."
+        title: "Troubleshooting and Optimization",
+        description: "Debugging, issue isolation, cleanup, and performance-minded improvements across the stack."
       },
       {
-        title: "Operational and Support Context",
-        description: "Engineering decisions shaped by real support pressure, systems work, and handoff reality."
+        title: "Hosting, Deployment, and IT Context",
+        description: "Technical work informed by AWS, Docker, DNS, SSL, system administration, and support reality."
       }
     ],
     myWork: "My work",
@@ -252,34 +252,34 @@ export const siteCopy = {
     availability: "Disponibilidad",
     snapshot: "Resumen",
     snapshotText:
-      "Fuerte en debugging, calidad de implementación y entregas con mirada operativa.",
+      "Ingeniero de software con base real en troubleshooting, soporte al cliente y ejecución práctica.",
     highlights: [
-      "Ejecución de producto",
-      "Resolución avanzada de problemas",
-      "Entrega con contexto operativo"
+      "Aplicaciones web y herramientas internas",
+      "Experiencia en soporte L1/L2",
+      "Contexto de hosting y despliegue"
     ],
     about: "Sobre mí",
     aboutText:
-      "Enfocado en ejecución, claridad y sistemas que funcionen bien después del primer release.",
+      "Apoyado en entrega de software, flujos de soporte y resolución operativa de problemas reales.",
     focusAreas: "Áreas de enfoque",
     whoIAm: "Quién soy",
-    whoIAmTitle: "Orientado a producto y resolución técnica real",
+    whoIAmTitle: "Ingeniería de software con experiencia real en soporte y operaciones",
     whoIAmText:
-      "Mi perfil mezcla entrega, soporte y troubleshooting. Eso suma cuando un producto necesita buena implementación y alguien que piense más allá del caso ideal.",
+      "Mi experiencia no se limita a construir interfaces. También incluye atención al cliente, manejo de casos complejos, documentación, hosting, infraestructura y el tipo de seguimiento técnico que importa cuando el software ya está en uso.",
     whatIDo: "Qué hago",
     howIWork: "Cómo trabajo",
     services: [
       {
-        title: "Interfaces y construcción de producto",
-        description: "Sistemas frontend y flujos de usuario claros, rápidos y mantenibles."
+        title: "Aplicaciones web y herramientas administrativas",
+        description: "Productos, dashboards y herramientas internas construidas con foco fuerte en mantenimiento."
       },
       {
-        title: "Debugging y estabilización",
-        description: "Aislamiento de problemas, cleanup y mejoras donde la confiabilidad importa."
+        title: "Troubleshooting y optimización",
+        description: "Debugging, aislamiento de problemas, cleanup y mejoras con foco en confiabilidad."
       },
       {
-        title: "Contexto operativo y de soporte",
-        description: "Decisiones de ingeniería influenciadas por soporte real, sistemas y handoff."
+        title: "Hosting, despliegue y contexto IT",
+        description: "Trabajo técnico informado por AWS, Docker, DNS, SSL, administración de sistemas y soporte real."
       }
     ],
     myWork: "Mi trabajo",
