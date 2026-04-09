@@ -1,8 +1,6 @@
-import { existsSync, mkdirSync } from "node:fs";
-import { promises as fs } from "node:fs";
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
+
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import seedProjects from "@/data/projects.json";
 import type {
@@ -17,8 +15,13 @@ import type {
   ProjectMetric
 } from "@/types/portfolio";
 
-const dataDir = path.join(process.cwd(), "data");
-const dbPath = path.join(dataDir, "portfolio.sqlite");
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY ?? "";
+const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET ?? "portfolio-assets";
+
+const storageUnavailableMessage =
+  "Admin storage is not configured. Add Supabase environment variables and run the provided schema before using the live CMS.";
 
 const defaultSettings: PortfolioSettings = {
   name: "Lucas Monzón",
@@ -73,7 +76,7 @@ const defaultSettings: PortfolioSettings = {
   }
 };
 
-type DbProjectRow = {
+type ProjectRow = {
   slug: string;
   title: string;
   tagline: string;
@@ -88,17 +91,18 @@ type DbProjectRow = {
   role: string;
   duration: string;
   cover_image: string;
-  gallery_images: string;
-  stack: string;
-  services: string;
-  metrics: string;
-  links: string;
-  featured: number;
+  gallery_images: string[] | null;
+  stack: string[] | null;
+  services: string[] | null;
+  metrics: ProjectMetric[] | null;
+  links: ProjectLink[] | null;
+  featured: boolean;
   accent: string;
-  translations: string;
+  translations: Partial<Record<"es", LocalizedProjectContent>> | null;
 };
 
-type DbSettingsRow = {
+type SettingsRow = {
+  id: number;
   name: string;
   title: string;
   intro: string;
@@ -110,10 +114,25 @@ type DbSettingsRow = {
   primary_cta_href: string;
   secondary_cta_label: string;
   secondary_cta_href: string;
-  focus_areas: string;
-  stats: string;
-  translations: string;
+  focus_areas: string[] | null;
+  stats: PortfolioStat[] | null;
+  translations: Partial<Record<"es", LocalizedPortfolioSettingsContent>> | null;
 };
+
+type AdminConfigRow = {
+  id: number;
+  secret_hash: string;
+};
+
+type AdminSessionRow = {
+  token_hash: string;
+  expires_at: string;
+};
+
+declare global {
+  var __portfolioSupabase: SupabaseClient | undefined;
+  var __portfolioSupabaseSeeded: boolean | undefined;
+}
 
 function getDefaultSpanishSettingsTranslation(): LocalizedPortfolioSettingsContent {
   return {
@@ -132,127 +151,14 @@ function getDefaultSpanishSettingsTranslation(): LocalizedPortfolioSettingsConte
 }
 
 function normalizeSettingsTranslations(
-  translations: Partial<Record<"es", LocalizedPortfolioSettingsContent>>
+  translations: Partial<Record<"es", LocalizedPortfolioSettingsContent>> | null | undefined
 ) {
   return {
-    ...translations,
     es: {
       ...getDefaultSpanishSettingsTranslation(),
-      ...(translations.es ?? {})
+      ...(translations?.es ?? {})
     }
   } satisfies Partial<Record<"es", LocalizedPortfolioSettingsContent>>;
-}
-
-declare global {
-  var __portfolioDb: DatabaseSync | undefined;
-  var __portfolioDbUnavailable: boolean | undefined;
-}
-
-const storageUnavailableMessage =
-  "Persistent admin storage is unavailable in this deployment. Use a hosted database and object storage for production writes.";
-
-function ensureDataDir() {
-  if (!existsSync(dataDir)) {
-    mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-function getDbOrNull() {
-  if (globalThis.__portfolioDbUnavailable) {
-    return null;
-  }
-
-  if (globalThis.__portfolioDb) {
-    ensureSchema(globalThis.__portfolioDb);
-    return globalThis.__portfolioDb;
-  }
-
-  try {
-    ensureDataDir();
-    const db = new DatabaseSync(dbPath);
-    ensureSchema(db);
-    seedDatabase(db);
-    globalThis.__portfolioDb = db;
-    return db;
-  } catch {
-    globalThis.__portfolioDbUnavailable = true;
-    return null;
-  }
-}
-
-function requireDb() {
-  const db = getDbOrNull();
-  if (!db) {
-    throw new Error(storageUnavailableMessage);
-  }
-  return db;
-}
-
-function ensureSchema(db: DatabaseSync) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS portfolio_settings (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      name TEXT NOT NULL,
-      title TEXT NOT NULL,
-      intro TEXT NOT NULL,
-      about TEXT NOT NULL,
-      email TEXT NOT NULL,
-      location TEXT NOT NULL,
-      availability TEXT NOT NULL,
-      primary_cta_label TEXT NOT NULL,
-      primary_cta_href TEXT NOT NULL,
-      secondary_cta_label TEXT NOT NULL,
-      secondary_cta_href TEXT NOT NULL,
-      focus_areas TEXT NOT NULL,
-      stats TEXT NOT NULL,
-      translations TEXT NOT NULL DEFAULT '{}'
-    );
-
-    CREATE TABLE IF NOT EXISTS projects (
-      slug TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      tagline TEXT NOT NULL,
-      year TEXT NOT NULL,
-      category TEXT NOT NULL,
-      status TEXT NOT NULL,
-      impact TEXT NOT NULL,
-      summary TEXT NOT NULL,
-      challenge TEXT NOT NULL,
-      solution TEXT NOT NULL,
-      client TEXT NOT NULL DEFAULT '',
-      role TEXT NOT NULL DEFAULT '',
-      duration TEXT NOT NULL DEFAULT '',
-      cover_image TEXT NOT NULL DEFAULT '',
-      gallery_images TEXT NOT NULL DEFAULT '[]',
-      stack TEXT NOT NULL,
-      services TEXT NOT NULL,
-      metrics TEXT NOT NULL,
-      links TEXT NOT NULL,
-      featured INTEGER NOT NULL DEFAULT 0,
-      accent TEXT NOT NULL,
-      translations TEXT NOT NULL DEFAULT '{}'
-    );
-
-    CREATE TABLE IF NOT EXISTS admin_config (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      secret_hash TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS admin_sessions (
-      token_hash TEXT PRIMARY KEY,
-      expires_at INTEGER NOT NULL
-    );
-  `);
-
-  const settingsColumns = db.prepare("PRAGMA table_info(portfolio_settings)").all() as { name: string }[];
-  if (!settingsColumns.some((column) => column.name === "translations")) {
-    db.exec("ALTER TABLE portfolio_settings ADD COLUMN translations TEXT NOT NULL DEFAULT '{}'");
-  }
-
-  const projectColumns = db.prepare("PRAGMA table_info(projects)").all() as { name: string }[];
-  if (!projectColumns.some((column) => column.name === "translations")) {
-    db.exec("ALTER TABLE projects ADD COLUMN translations TEXT NOT NULL DEFAULT '{}'");
-  }
 }
 
 function getDefaultSpanishProjectTranslation(slug: string): Partial<Record<"es", LocalizedProjectContent>> {
@@ -340,105 +246,126 @@ function getDefaultSpanishProjectTranslation(slug: string): Partial<Record<"es",
   return translation ? { es: translation } : {};
 }
 
-function seedDatabase(db: DatabaseSync) {
-  const settingsCount = db.prepare("SELECT COUNT(*) as count FROM portfolio_settings").get() as { count: number };
-  if (settingsCount.count === 0) {
-    db.prepare(`
-      INSERT INTO portfolio_settings (
-        id, name, title, intro, about, email, location, availability,
-        primary_cta_label, primary_cta_href, secondary_cta_label, secondary_cta_href,
-        focus_areas, stats, translations
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      1,
-      defaultSettings.name,
-      defaultSettings.title,
-      defaultSettings.intro,
-      defaultSettings.about,
-      defaultSettings.email,
-      defaultSettings.location,
-      defaultSettings.availability,
-      defaultSettings.primaryCtaLabel,
-      defaultSettings.primaryCtaHref,
-      defaultSettings.secondaryCtaLabel,
-      defaultSettings.secondaryCtaHref,
-      JSON.stringify(defaultSettings.focusAreas),
-      JSON.stringify(defaultSettings.stats),
-      JSON.stringify(defaultSettings.translations)
-    );
-  } else {
-    const row = db.prepare("SELECT translations FROM portfolio_settings WHERE id = 1").get() as
-      | { translations: string }
-      | undefined;
-    const parsedTranslations = row?.translations
-      ? (JSON.parse(row.translations) as Partial<Record<"es", LocalizedPortfolioSettingsContent>>)
-      : {};
-    const normalizedTranslations = normalizeSettingsTranslations(parsedTranslations);
+function getSeedProjects(): Project[] {
+  return seedProjects.map((project) => ({
+    slug: project.slug,
+    title: project.title,
+    tagline: project.tagline,
+    year: project.year,
+    category: project.category,
+    status: project.status,
+    impact: project.impact,
+    summary: project.summary,
+    challenge: project.challenge,
+    solution: project.solution,
+    client:
+      project.slug === "shoppy-dashboard"
+        ? "Admin dashboard concept"
+        : project.slug === "tech-haven-ecommerce"
+          ? "Tech Haven"
+          : "Internal productivity tool",
+    role:
+      project.slug === "snippet-assistant"
+        ? "Product builder + frontend engineer"
+        : "Full-stack developer",
+    duration: project.slug === "tech-haven-ecommerce" ? "End-to-end build" : "Product case study",
+    coverImage:
+      project.slug === "shoppy-dashboard"
+        ? "/uploads/Portfolio-01.png"
+        : project.slug === "tech-haven-ecommerce"
+          ? "/uploads/portfolio-02.png"
+          : "/uploads/portfolio-03.png",
+    galleryImages:
+      project.slug === "shoppy-dashboard"
+        ? ["/uploads/shoppy-details.jpg"]
+        : project.slug === "tech-haven-ecommerce"
+          ? ["/uploads/ecommerce-details.jpg"]
+          : ["/uploads/snippet-extension-details.png", "/uploads/snippet-extension-details2.png"],
+    stack: project.stack,
+    services: project.services,
+    metrics: project.metrics,
+    links: project.links,
+    featured: project.featured,
+    accent: project.accent,
+    translations: getDefaultSpanishProjectTranslation(project.slug)
+  }));
+}
 
-    if (!row?.translations || JSON.stringify(parsedTranslations) !== JSON.stringify(normalizedTranslations)) {
-      db.prepare("UPDATE portfolio_settings SET translations = ? WHERE id = 1").run(
-        JSON.stringify(normalizedTranslations)
-      );
-    }
+function isSupabaseConfigured() {
+  return Boolean(supabaseUrl && supabaseServiceRoleKey);
+}
+
+function getSupabaseAdmin() {
+  if (!isSupabaseConfigured()) {
+    return null;
   }
 
-  const projectsCount = db.prepare("SELECT COUNT(*) as count FROM projects").get() as { count: number };
-  if (projectsCount.count === 0) {
-    const statement = db.prepare(`
-      INSERT INTO projects (
-        slug, title, tagline, year, category, status, impact, summary,
-        challenge, solution, client, role, duration, cover_image, gallery_images,
-        stack, services, metrics, links, featured, accent, translations
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    for (const project of seedProjects) {
-      statement.run(
-        project.slug,
-        project.title,
-        project.tagline,
-        project.year,
-        project.category,
-        project.status,
-        project.impact,
-        project.summary,
-        project.challenge,
-        project.solution,
-        project.slug === "shoppy-dashboard" ? "Admin dashboard concept" : project.slug === "tech-haven-ecommerce" ? "Tech Haven" : "Internal productivity tool",
-        project.slug === "snippet-assistant" ? "Product builder + frontend engineer" : "Full-stack developer",
-        project.slug === "tech-haven-ecommerce" ? "End-to-end build" : "Product case study",
-        project.slug === "shoppy-dashboard" ? "/uploads/Portfolio-01.png" : project.slug === "tech-haven-ecommerce" ? "/uploads/portfolio-02.png" : "/uploads/portfolio-03.png",
-        JSON.stringify(
-          project.slug === "shoppy-dashboard"
-            ? ["/uploads/shoppy-details.jpg"]
-            : project.slug === "tech-haven-ecommerce"
-              ? ["/uploads/ecommerce-details.jpg"]
-              : ["/uploads/snippet-extension-details.png", "/uploads/snippet-extension-details2.png"]
-        ),
-        JSON.stringify(project.stack),
-        JSON.stringify(project.services),
-        JSON.stringify(project.metrics),
-        JSON.stringify(project.links),
-        project.featured ? 1 : 0,
-        project.accent,
-        JSON.stringify(getDefaultSpanishProjectTranslation(project.slug))
-      );
-    }
-  } else {
-    const rows = db.prepare("SELECT slug, translations FROM projects").all() as {
-      slug: string;
-      translations: string;
-    }[];
-
-    for (const row of rows) {
-      if (!row.translations || row.translations === "{}") {
-        db.prepare("UPDATE projects SET translations = ? WHERE slug = ?").run(
-          JSON.stringify(getDefaultSpanishProjectTranslation(row.slug)),
-          row.slug
-        );
+  if (!globalThis.__portfolioSupabase) {
+    globalThis.__portfolioSupabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
       }
+    });
+  }
+
+  return globalThis.__portfolioSupabase;
+}
+
+function requireSupabase() {
+  const client = getSupabaseAdmin();
+  if (!client) {
+    throw new Error(storageUnavailableMessage);
+  }
+  return client;
+}
+
+async function ensureSeeded() {
+  const supabase = getSupabaseAdmin();
+  if (!supabase || globalThis.__portfolioSupabaseSeeded) {
+    return;
+  }
+
+  const { data: existingSettings, error: settingsError } = await supabase
+    .from("portfolio_settings")
+    .select("id")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (settingsError) {
+    throw new Error(settingsError.message);
+  }
+
+  if (!existingSettings) {
+    const settingsPayload = serializeSettings(defaultSettings);
+    const { error } = await supabase.from("portfolio_settings").insert({
+      id: 1,
+      ...settingsPayload
+    });
+
+    if (error) {
+      throw new Error(error.message);
     }
   }
+
+  const { count, error: countError } = await supabase
+    .from("projects")
+    .select("slug", { count: "exact", head: true });
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  if (!count) {
+    const rows = getSeedProjects().map(serializeProject);
+    const { error } = await supabase.from("projects").insert(rows);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  globalThis.__portfolioSupabaseSeeded = true;
 }
 
 function parseList(value: string | string[]) {
@@ -531,7 +458,7 @@ function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function deserializeProject(row: DbProjectRow): Project {
+function deserializeProject(row: ProjectRow): Project {
   return {
     slug: row.slug,
     title: row.title,
@@ -547,22 +474,18 @@ function deserializeProject(row: DbProjectRow): Project {
     role: row.role,
     duration: row.duration,
     coverImage: row.cover_image,
-    galleryImages: JSON.parse(row.gallery_images) as string[],
-    stack: JSON.parse(row.stack) as string[],
-    services: JSON.parse(row.services) as string[],
-    metrics: JSON.parse(row.metrics) as ProjectMetric[],
-    links: JSON.parse(row.links) as ProjectLink[],
+    galleryImages: row.gallery_images ?? [],
+    stack: row.stack ?? [],
+    services: row.services ?? [],
+    metrics: row.metrics ?? [],
+    links: row.links ?? [],
     featured: Boolean(row.featured),
     accent: row.accent,
-    translations: JSON.parse(row.translations || "{}") as Partial<Record<"es", LocalizedProjectContent>>
+    translations: row.translations ?? getDefaultSpanishProjectTranslation(row.slug)
   };
 }
 
-function deserializeSettings(row: DbSettingsRow): PortfolioSettings {
-  const translations = normalizeSettingsTranslations(
-    JSON.parse(row.translations || "{}") as Partial<Record<"es", LocalizedPortfolioSettingsContent>>
-  );
-
+function deserializeSettings(row: SettingsRow): PortfolioSettings {
   return {
     name: row.name,
     title: row.title,
@@ -575,14 +498,14 @@ function deserializeSettings(row: DbSettingsRow): PortfolioSettings {
     primaryCtaHref: row.primary_cta_href,
     secondaryCtaLabel: row.secondary_cta_label,
     secondaryCtaHref: row.secondary_cta_href,
-    focusAreas: JSON.parse(row.focus_areas) as string[],
-    stats: JSON.parse(row.stats) as PortfolioStat[],
-    translations
+    focusAreas: row.focus_areas ?? [],
+    stats: row.stats ?? [],
+    translations: normalizeSettingsTranslations(row.translations)
   };
 }
 
-function getSeedProjects(): Project[] {
-  return seedProjects.map((project) => ({
+function serializeProject(project: Project) {
+  return {
     slug: project.slug,
     title: project.title,
     tagline: project.tagline,
@@ -593,41 +516,42 @@ function getSeedProjects(): Project[] {
     summary: project.summary,
     challenge: project.challenge,
     solution: project.solution,
-    client:
-      project.slug === "shoppy-dashboard"
-        ? "Admin dashboard concept"
-        : project.slug === "tech-haven-ecommerce"
-          ? "Tech Haven"
-          : "Internal productivity tool",
-    role:
-      project.slug === "snippet-assistant"
-        ? "Product builder + frontend engineer"
-        : "Full-stack developer",
-    duration: project.slug === "tech-haven-ecommerce" ? "End-to-end build" : "Product case study",
-    coverImage:
-      project.slug === "shoppy-dashboard"
-        ? "/uploads/Portfolio-01.png"
-        : project.slug === "tech-haven-ecommerce"
-          ? "/uploads/portfolio-02.png"
-          : "/uploads/portfolio-03.png",
-    galleryImages:
-      project.slug === "shoppy-dashboard"
-        ? ["/uploads/shoppy-details.jpg"]
-        : project.slug === "tech-haven-ecommerce"
-          ? ["/uploads/ecommerce-details.jpg"]
-          : ["/uploads/snippet-extension-details.png", "/uploads/snippet-extension-details2.png"],
+    client: project.client,
+    role: project.role,
+    duration: project.duration,
+    cover_image: project.coverImage,
+    gallery_images: project.galleryImages,
     stack: project.stack,
     services: project.services,
     metrics: project.metrics,
     links: project.links,
     featured: project.featured,
     accent: project.accent,
-    translations: getDefaultSpanishProjectTranslation(project.slug)
-  }));
+    translations: project.translations
+  };
+}
+
+function serializeSettings(settings: PortfolioSettings) {
+  return {
+    name: settings.name,
+    title: settings.title,
+    intro: settings.intro,
+    about: settings.about,
+    email: settings.email,
+    location: settings.location,
+    availability: settings.availability,
+    primary_cta_label: settings.primaryCtaLabel,
+    primary_cta_href: settings.primaryCtaHref,
+    secondary_cta_label: settings.secondaryCtaLabel,
+    secondary_cta_href: settings.secondaryCtaHref,
+    focus_areas: settings.focusAreas,
+    stats: settings.stats,
+    translations: normalizeSettingsTranslations(settings.translations)
+  };
 }
 
 export function isPersistenceAvailable() {
-  return Boolean(getDbOrNull());
+  return isSupabaseConfigured();
 }
 
 export function parseProjectInput(payload: Record<string, unknown>): ProjectInput {
@@ -690,8 +614,8 @@ export function parseSettingsInput(payload: Record<string, unknown>): PortfolioS
     secondaryCtaHref: String(payload.secondaryCtaHref ?? "").trim(),
     focusAreas: String(payload.focusAreas ?? ""),
     stats: String(payload.stats ?? ""),
-    esTitle: String(payload.esTitle ?? "").trim(),
     esName: String(payload.esName ?? "").trim(),
+    esTitle: String(payload.esTitle ?? "").trim(),
     esIntro: String(payload.esIntro ?? "").trim(),
     esAbout: String(payload.esAbout ?? "").trim(),
     esAvailability: String(payload.esAvailability ?? "").trim(),
@@ -703,33 +627,56 @@ export function parseSettingsInput(payload: Record<string, unknown>): PortfolioS
 }
 
 export async function getProjects() {
-  const db = getDbOrNull();
-  if (!db) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return getSeedProjects();
   }
 
-  const rows = db.prepare("SELECT * FROM projects ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
-  return rows.map(deserializeProject);
+  try {
+    await ensureSeeded();
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("year", { ascending: false })
+      .order("title", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as ProjectRow[]).map(deserializeProject);
+  } catch {
+    return getSeedProjects();
+  }
 }
 
 export async function getFeaturedProjects() {
-  const db = getDbOrNull();
-  if (!db) {
-    return getSeedProjects().filter((project) => project.featured);
-  }
-
-  const rows = db.prepare("SELECT * FROM projects WHERE featured = 1 ORDER BY CAST(year AS INTEGER) DESC, title ASC").all() as DbProjectRow[];
-  return rows.map(deserializeProject);
+  const projects = await getProjects();
+  return projects.filter((project) => project.featured);
 }
 
 export async function getProjectBySlug(slug: string) {
-  const db = getDbOrNull();
-  if (!db) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return getSeedProjects().find((project) => project.slug === slug);
   }
 
-  const row = db.prepare("SELECT * FROM projects WHERE slug = ?").get(slug) as DbProjectRow | undefined;
-  return row ? deserializeProject(row) : undefined;
+  try {
+    await ensureSeeded();
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data ? deserializeProject(data as ProjectRow) : undefined;
+  } catch {
+    return getSeedProjects().find((project) => project.slug === slug);
+  }
 }
 
 export async function upsertProject(input: ProjectInput) {
@@ -775,79 +722,51 @@ export async function upsertProject(input: ProjectInput) {
     }
   };
 
-  requireDb()
-    .prepare(`
-      INSERT INTO projects (
-        slug, title, tagline, year, category, status, impact, summary,
-        challenge, solution, client, role, duration, cover_image, gallery_images,
-        stack, services, metrics, links, featured, accent, translations
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(slug) DO UPDATE SET
-        title = excluded.title,
-        tagline = excluded.tagline,
-        year = excluded.year,
-        category = excluded.category,
-        status = excluded.status,
-        impact = excluded.impact,
-        summary = excluded.summary,
-        challenge = excluded.challenge,
-        solution = excluded.solution,
-        client = excluded.client,
-        role = excluded.role,
-        duration = excluded.duration,
-        cover_image = excluded.cover_image,
-        gallery_images = excluded.gallery_images,
-        stack = excluded.stack,
-        services = excluded.services,
-        metrics = excluded.metrics,
-        links = excluded.links,
-        featured = excluded.featured,
-        accent = excluded.accent,
-        translations = excluded.translations
-    `)
-    .run(
-      project.slug,
-      project.title,
-      project.tagline,
-      project.year,
-      project.category,
-      project.status,
-      project.impact,
-      project.summary,
-      project.challenge,
-      project.solution,
-      project.client,
-      project.role,
-      project.duration,
-      project.coverImage,
-      JSON.stringify(project.galleryImages),
-      JSON.stringify(project.stack),
-      JSON.stringify(project.services),
-      JSON.stringify(project.metrics),
-      JSON.stringify(project.links),
-      project.featured ? 1 : 0,
-      project.accent,
-      JSON.stringify(project.translations)
-    );
+  const supabase = requireSupabase();
+  await ensureSeeded();
+
+  const { error } = await supabase.from("projects").upsert(serializeProject(project), {
+    onConflict: "slug"
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return project;
 }
 
 export async function deleteProject(slug: string) {
-  const result = requireDb().prepare("DELETE FROM projects WHERE slug = ?").run(slug);
-  if (result.changes === 0) {
-    throw new Error("Project not found.");
+  const supabase = requireSupabase();
+  const { error } = await supabase.from("projects").delete().eq("slug", slug);
+
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
 export async function getPortfolioSettings() {
-  const db = getDbOrNull();
-  if (!db) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return defaultSettings;
   }
 
-  const row = db.prepare("SELECT * FROM portfolio_settings WHERE id = 1").get() as DbSettingsRow | undefined;
-  return row ? deserializeSettings(row) : defaultSettings;
+  try {
+    await ensureSeeded();
+    const { data, error } = await supabase
+      .from("portfolio_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data ? deserializeSettings(data as SettingsRow) : defaultSettings;
+  } catch {
+    return defaultSettings;
+  }
 }
 
 export async function updatePortfolioSettings(input: PortfolioSettingsInput) {
@@ -880,66 +799,60 @@ export async function updatePortfolioSettings(input: PortfolioSettingsInput) {
     }
   };
 
-  requireDb()
-    .prepare(`
-      UPDATE portfolio_settings
-      SET
-        name = ?,
-        title = ?,
-        intro = ?,
-        about = ?,
-        email = ?,
-        location = ?,
-        availability = ?,
-        primary_cta_label = ?,
-        primary_cta_href = ?,
-        secondary_cta_label = ?,
-        secondary_cta_href = ?,
-        focus_areas = ?,
-        stats = ?,
-        translations = ?
-      WHERE id = 1
-    `)
-    .run(
-      settings.name,
-      settings.title,
-      settings.intro,
-      settings.about,
-      settings.email,
-      settings.location,
-      settings.availability,
-      settings.primaryCtaLabel,
-      settings.primaryCtaHref,
-      settings.secondaryCtaLabel,
-      settings.secondaryCtaHref,
-      JSON.stringify(settings.focusAreas),
-      JSON.stringify(settings.stats),
-      JSON.stringify(settings.translations)
-    );
+  const supabase = requireSupabase();
+  await ensureSeeded();
+
+  const { error } = await supabase.from("portfolio_settings").upsert(
+    {
+      id: 1,
+      ...serializeSettings(settings)
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return settings;
 }
 
-export async function saveUploadedFile(fileName: string, buffer: Buffer) {
-  if (!isPersistenceAvailable()) {
-    throw new Error(storageUnavailableMessage);
+export async function saveUploadedFile(fileName: string, buffer: Buffer, contentType?: string) {
+  const supabase = requireSupabase();
+  const objectPath = `uploads/${Date.now()}-${fileName}`;
+
+  const { error } = await supabase.storage
+    .from(supabaseStorageBucket)
+    .upload(objectPath, buffer, {
+      contentType,
+      upsert: false
+    });
+
+  if (error) {
+    throw new Error(error.message);
   }
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-  const filePath = path.join(uploadsDir, fileName);
-  await fs.writeFile(filePath, buffer);
-  return `/uploads/${fileName}`;
+  const { data } = supabase.storage.from(supabaseStorageBucket).getPublicUrl(objectPath);
+  return data.publicUrl;
 }
 
 export async function hasAdminSecretConfigured() {
-  const db = getDbOrNull();
-  if (!db) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return false;
   }
 
-  const row = db.prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
-  return Boolean(row?.secret_hash);
+  const { data, error } = await supabase
+    .from("admin_config")
+    .select("secret_hash")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Boolean((data as AdminConfigRow | null)?.secret_hash);
 }
 
 export async function setAdminSecret(secret: string) {
@@ -950,26 +863,59 @@ export async function setAdminSecret(secret: string) {
   if (await hasAdminSecretConfigured()) {
     throw new Error("Admin secret is already configured.");
   }
-  requireDb().prepare("INSERT INTO admin_config (id, secret_hash) VALUES (1, ?)").run(hashSecret(normalized));
+
+  const supabase = requireSupabase();
+  const { error } = await supabase.from("admin_config").upsert(
+    {
+      id: 1,
+      secret_hash: hashSecret(normalized)
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function verifyAdminSecret(secret: string) {
-  const db = getDbOrNull();
-  if (!db) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return false;
   }
 
-  const row = db.prepare("SELECT secret_hash FROM admin_config WHERE id = 1").get() as { secret_hash: string } | undefined;
+  const { data, error } = await supabase
+    .from("admin_config")
+    .select("secret_hash")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const row = data as AdminConfigRow | null;
   if (!row?.secret_hash) {
     return false;
   }
+
   return verifySecret(secret, row.secret_hash);
 }
 
 export async function createAdminSession() {
+  const supabase = requireSupabase();
   const token = randomBytes(32).toString("hex");
   const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 14;
-  requireDb().prepare("INSERT INTO admin_sessions (token_hash, expires_at) VALUES (?, ?)").run(hashToken(token), expiresAt);
+
+  const { error } = await supabase.from("admin_sessions").insert({
+    token_hash: hashToken(token),
+    expires_at: new Date(expiresAt).toISOString()
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
   return { token, expiresAt };
 }
 
@@ -977,19 +923,32 @@ export async function validateAdminSession(token: string) {
   if (!token) {
     return false;
   }
-  const db = getDbOrNull();
-  if (!db) {
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return false;
   }
 
-  const row = db.prepare("SELECT token_hash, expires_at FROM admin_sessions WHERE token_hash = ?").get(hashToken(token)) as { token_hash: string; expires_at: number } | undefined;
+  const { data, error } = await supabase
+    .from("admin_sessions")
+    .select("token_hash, expires_at")
+    .eq("token_hash", hashToken(token))
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const row = data as AdminSessionRow | null;
   if (!row) {
     return false;
   }
-  if (row.expires_at < Date.now()) {
-    db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
+
+  if (Date.parse(row.expires_at) < Date.now()) {
+    await deleteAdminSession(token);
     return false;
   }
+
   return true;
 }
 
@@ -997,10 +956,18 @@ export async function deleteAdminSession(token: string) {
   if (!token) {
     return;
   }
-  const db = getDbOrNull();
-  if (!db) {
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
     return;
   }
 
-  db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?").run(hashToken(token));
+  const { error } = await supabase
+    .from("admin_sessions")
+    .delete()
+    .eq("token_hash", hashToken(token));
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

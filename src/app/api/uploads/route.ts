@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const baseName = path.basename(file.name, extension);
     const fileName = `${Date.now()}-${sanitizeFileName(baseName)}${extension}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const url = await saveUploadedFile(fileName, buffer);
+    const url = await saveUploadedFile(fileName, buffer, file.type);
 
     return NextResponse.json({ url });
   } catch (error) {

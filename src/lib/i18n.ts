@@ -170,7 +170,7 @@ export const siteCopy = {
     adminIntro:
       "Update your profile, manage projects, and upload images without editing code.",
     adminStorageDisabled:
-      "This deployment is running without durable local storage. Public content works, but admin editing is disabled here.",
+      "Admin editing is not configured for this deployment yet. Add the Supabase environment variables and schema to enable the live CMS.",
     adminSecret: "Admin secret",
     adminSecretPlaceholder: "Required to save, delete, or upload",
     adminSetupText:
@@ -306,7 +306,7 @@ export const siteCopy = {
     adminIntro:
       "Actualizá tu perfil, gestioná proyectos y subí imágenes sin editar código.",
     adminStorageDisabled:
-      "Este despliegue se está ejecutando sin almacenamiento local persistente. El contenido público funciona, pero la edición admin está deshabilitada acá.",
+      "La edición admin todavía no está configurada para este despliegue. Agregá las variables de entorno y el schema de Supabase para habilitar el CMS en producción.",
     adminSecret: "Clave admin",
     adminSecretPlaceholder: "Requerida para guardar, borrar o subir",
     adminSetupText:
