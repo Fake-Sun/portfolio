@@ -64,7 +64,8 @@ export function LanguageSelector() {
       aria-label={current.title}
       title={current.title}
     >
-      <img src={current.src} alt={current.alt} className="language-toggle__flag" />
+      <img key={locale} src={current.src} alt={current.alt} className="language-toggle__flag" />
+      <span className="language-toggle__label">{locale.toUpperCase()}</span>
     </button>
   );
 }

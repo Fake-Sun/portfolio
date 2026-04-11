@@ -128,7 +128,7 @@ export const siteCopy = {
     ],
     highlights: [
       "Web applications and internal tools",
-      "L1/L2 support experience",
+      "L2 / supervisor support experience",
       "Hosting and deployment context"
     ],
     about: "About",
@@ -288,7 +288,7 @@ export const siteCopy = {
     ],
     highlights: [
       "Aplicaciones web y herramientas internas",
-      "Experiencia en soporte L1/L2",
+      "Experiencia en soporte L2 / supervisor",
       "Contexto de hosting y despliegue"
     ],
     about: "Sobre mí",
