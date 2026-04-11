@@ -114,9 +114,18 @@ export const siteCopy = {
     basedIn: "Based in",
     contact: "Contact",
     availability: "Availability",
-    snapshot: "Snapshot",
+    snapshot: "Profile",
     snapshotText:
       "Software engineer shaped by troubleshooting, customer support, and practical delivery.",
+    snapshotPoints: [
+      "Built from software work, support pressure, and technical troubleshooting.",
+      "Comfortable across product work, admin tools, hosting, and deployment context."
+    ],
+    snapshotHighlights: [
+      "Customer support and L2 escalation handling",
+      "Hosting, deployment, DNS, SSL, and infrastructure context",
+      "Web applications, admin tools, and technical problem solving"
+    ],
     highlights: [
       "Web applications and internal tools",
       "L1/L2 support experience",
@@ -145,6 +154,21 @@ export const siteCopy = {
         title: "Hosting, Deployment, and IT Context",
         description: "Technical work informed by AWS, Docker, DNS, SSL, system administration, and support reality."
       }
+    ],
+    howIContribute: "Where I bring value",
+    skillCloud: [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "Python",
+      "Java",
+      "MySQL",
+      "MongoDB",
+      "AWS",
+      "Docker",
+      "Windows / Linux",
+      "Git / GitHub",
+      "DNS / SSL"
     ],
     myWork: "My work",
     selectedWork: "Selected work",
@@ -250,9 +274,18 @@ export const siteCopy = {
     basedIn: "Ubicado en",
     contact: "Contacto",
     availability: "Disponibilidad",
-    snapshot: "Resumen",
+    snapshot: "Perfil",
     snapshotText:
       "Ingeniero de software con base real en troubleshooting, soporte al cliente y ejecución práctica.",
+    snapshotPoints: [
+      "Formado entre software, presión de soporte y resolución técnica de problemas.",
+      "Cómodo entre producto, herramientas administrativas, hosting y despliegue."
+    ],
+    snapshotHighlights: [
+      "Atención al cliente y manejo de escalaciones L2",
+      "Hosting, despliegue, DNS, SSL y contexto de infraestructura",
+      "Aplicaciones web, herramientas administrativas y resolución técnica"
+    ],
     highlights: [
       "Aplicaciones web y herramientas internas",
       "Experiencia en soporte L1/L2",
@@ -281,6 +314,21 @@ export const siteCopy = {
         title: "Hosting, despliegue y contexto IT",
         description: "Trabajo técnico informado por AWS, Docker, DNS, SSL, administración de sistemas y soporte real."
       }
+    ],
+    howIContribute: "Dónde aporto valor",
+    skillCloud: [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "Python",
+      "Java",
+      "MySQL",
+      "MongoDB",
+      "AWS",
+      "Docker",
+      "Windows / Linux",
+      "Git / GitHub",
+      "DNS / SSL"
     ],
     myWork: "Mi trabajo",
     selectedWork: "Proyectos seleccionados",

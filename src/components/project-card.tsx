@@ -1,3 +1,5 @@
+"use client";
+
 import { siteCopy, type Locale } from "@/lib/i18n";
 import type { Project } from "@/types/portfolio";
 
