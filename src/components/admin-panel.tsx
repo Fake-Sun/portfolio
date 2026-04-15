@@ -300,6 +300,13 @@ export function AdminPanel({
     setStatus(`${copy.adminProjectLoaded as string} "${project.title}".`);
   }
 
+  function startNewProject() {
+    setProjectForm(createProjectForm());
+    setActiveTab("projects");
+    setContentLanguage("en");
+    setStatus(copy.adminNewProjectReady as string);
+  }
+
   async function handleLogout() {
     await fetch("/api/admin/logout", {
       method: "POST"
@@ -359,6 +366,15 @@ export function AdminPanel({
 
         {activeTab === "projects" ? (
           <form className="admin-form" onSubmit={handleProjectSubmit}>
+            <div className="admin-form-toolbar full-span">
+              <div>
+                <span>{copy.adminProjectEditorLabel as string}</span>
+                <h3>{projectForm.slug || (copy.adminNewProjectDraft as string)}</h3>
+              </div>
+              <button type="button" onClick={startNewProject}>
+                {copy.adminNewProject as string}
+              </button>
+            </div>
             <div className="admin-form-section">
               <h3>{copy.adminSharedFields as string}</h3>
             </div>
@@ -637,7 +653,7 @@ export function AdminPanel({
             </label>
             <div className="admin-actions">
               <button type="submit">{copy.adminSaveProject as string}</button>
-              <button type="button" onClick={() => setProjectForm(initialProjectForm)}>
+              <button type="button" onClick={startNewProject}>
                 {copy.adminResetForm as string}
               </button>
               <span>{status}</span>
