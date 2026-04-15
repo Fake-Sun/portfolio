@@ -575,6 +575,7 @@ export function parseProjectInput(payload: Record<string, unknown>): ProjectInpu
   const slug = toSlug(String(payload.slug ?? "").trim()) || toSlug(title);
 
   const input: ProjectInput = {
+    originalSlug: String(payload.originalSlug ?? "").trim(),
     slug,
     title,
     tagline: String(payload.tagline ?? "").trim(),
@@ -799,6 +800,17 @@ export async function upsertProject(input: ProjectInput) {
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (input.originalSlug && input.originalSlug !== project.slug) {
+    const { error: deleteError } = await supabase
+      .from("projects")
+      .delete()
+      .eq("slug", input.originalSlug);
+
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
   }
 
   return project;

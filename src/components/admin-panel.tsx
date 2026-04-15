@@ -13,6 +13,7 @@ type AdminPanelProps = {
 };
 
 type ProjectFormState = {
+  originalSlug: string;
   slug: string;
   title: string;
   tagline: string;
@@ -65,6 +66,7 @@ type SettingsLocalizedRequirement = {
 };
 
 const initialProjectForm: ProjectFormState = {
+  originalSlug: "",
   slug: "",
   title: "",
   tagline: "",
@@ -295,7 +297,7 @@ export function AdminPanel({
   async function handleDelete(slug: string) {
     setStatus(copy.adminDeletingProject as string);
 
-    const response = await fetch(`/api/projects/${slug}`, {
+    const response = await fetch(`/api/projects/${encodeURIComponent(slug)}`, {
       method: "DELETE"
     });
 
@@ -348,6 +350,7 @@ export function AdminPanel({
     const spanishProject = localizeProject(project, "es");
 
     setProjectForm(createProjectForm({
+      originalSlug: project.slug,
       slug: project.slug,
       title: project.title,
       tagline: project.tagline,

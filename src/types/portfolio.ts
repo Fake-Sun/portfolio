@@ -51,6 +51,7 @@ export type Project = {
 };
 
 export type ProjectInput = Omit<Project, "galleryImages" | "stack" | "services" | "metrics" | "links" | "translations"> & {
+  originalSlug?: string;
   galleryImages: string[] | string;
   stack: string[] | string;
   services: string[] | string;
