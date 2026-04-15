@@ -572,9 +572,10 @@ export function parseProjectInput(payload: Record<string, unknown>): ProjectInpu
   if (!title) {
     throw new Error("Title is required.");
   }
+  const slug = toSlug(String(payload.slug ?? "").trim()) || toSlug(title);
 
   const input: ProjectInput = {
-    slug: String(payload.slug ?? "").trim() || toSlug(title),
+    slug,
     title,
     tagline: String(payload.tagline ?? "").trim(),
     year: String(payload.year ?? "").trim(),

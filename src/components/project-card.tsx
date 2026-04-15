@@ -11,6 +11,7 @@ type ProjectCardProps = {
 export function ProjectCard({ project, locale }: ProjectCardProps) {
   const copy = siteCopy[locale];
   const metaItems = [project.role, project.client].filter(Boolean);
+  const projectHref = `/${locale}/projects/${encodeURIComponent(project.slug)}`;
 
   return (
     <article className="project-card">
@@ -35,7 +36,7 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
         ) : null}
         <div className="project-card__footer">
           <span>{project.status}</span>
-          <a href={`/${locale}/projects/${project.slug}`} className="project-card__link">
+          <a href={projectHref} className="project-card__link">
             {copy.viewProject as string}
           </a>
         </div>
