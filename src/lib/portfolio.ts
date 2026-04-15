@@ -554,13 +554,26 @@ export function isPersistenceAvailable() {
   return isSupabaseConfigured();
 }
 
+function assertRequiredFields<T extends Record<string, unknown>>(
+  input: T,
+  fields: { key: keyof T; label: string; language?: "English" | "Spanish" }[]
+) {
+  const missing = fields
+    .filter((field) => !String(input[field.key] ?? "").trim())
+    .map((field) => (field.language ? `${field.language} ${field.label}` : field.label));
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required fields: ${missing.join(", ")}.`);
+  }
+}
+
 export function parseProjectInput(payload: Record<string, unknown>): ProjectInput {
   const title = String(payload.title ?? "").trim();
   if (!title) {
     throw new Error("Title is required.");
   }
 
-  return {
+  const input: ProjectInput = {
     slug: String(payload.slug ?? "").trim() || toSlug(title),
     title,
     tagline: String(payload.tagline ?? "").trim(),
@@ -597,10 +610,41 @@ export function parseProjectInput(payload: Record<string, unknown>): ProjectInpu
     featured: String(payload.featured ?? "") === "true",
     accent: String(payload.accent ?? "").trim() || "linear-gradient(135deg, #101827 0%, #17324f 100%)"
   };
+
+  assertRequiredFields(input, [
+    { key: "title", label: "title", language: "English" },
+    { key: "tagline", label: "tagline", language: "English" },
+    { key: "category", label: "category", language: "English" },
+    { key: "status", label: "status", language: "English" },
+    { key: "client", label: "client", language: "English" },
+    { key: "role", label: "role", language: "English" },
+    { key: "duration", label: "duration", language: "English" },
+    { key: "impact", label: "impact", language: "English" },
+    { key: "summary", label: "summary", language: "English" },
+    { key: "challenge", label: "challenge", language: "English" },
+    { key: "solution", label: "solution", language: "English" },
+    { key: "services", label: "services", language: "English" },
+    { key: "metrics", label: "metrics", language: "English" },
+    { key: "esTitle", label: "title", language: "Spanish" },
+    { key: "esTagline", label: "tagline", language: "Spanish" },
+    { key: "esCategory", label: "category", language: "Spanish" },
+    { key: "esStatus", label: "status", language: "Spanish" },
+    { key: "esClient", label: "client", language: "Spanish" },
+    { key: "esRole", label: "role", language: "Spanish" },
+    { key: "esDuration", label: "duration", language: "Spanish" },
+    { key: "esImpact", label: "impact", language: "Spanish" },
+    { key: "esSummary", label: "summary", language: "Spanish" },
+    { key: "esChallenge", label: "challenge", language: "Spanish" },
+    { key: "esSolution", label: "solution", language: "Spanish" },
+    { key: "esServices", label: "services", language: "Spanish" },
+    { key: "esMetrics", label: "metrics", language: "Spanish" }
+  ]);
+
+  return input;
 }
 
 export function parseSettingsInput(payload: Record<string, unknown>): PortfolioSettingsInput {
-  return {
+  const input: PortfolioSettingsInput = {
     name: String(payload.name ?? "").trim(),
     title: String(payload.title ?? "").trim(),
     intro: String(payload.intro ?? "").trim(),
@@ -624,6 +668,29 @@ export function parseSettingsInput(payload: Record<string, unknown>): PortfolioS
     esFocusAreas: String(payload.esFocusAreas ?? ""),
     esStats: String(payload.esStats ?? "")
   };
+
+  assertRequiredFields(input, [
+    { key: "name", label: "name", language: "English" },
+    { key: "title", label: "headline", language: "English" },
+    { key: "intro", label: "intro", language: "English" },
+    { key: "about", label: "about", language: "English" },
+    { key: "availability", label: "availability", language: "English" },
+    { key: "primaryCtaLabel", label: "primary CTA label", language: "English" },
+    { key: "secondaryCtaLabel", label: "secondary CTA label", language: "English" },
+    { key: "focusAreas", label: "focus areas", language: "English" },
+    { key: "stats", label: "stats", language: "English" },
+    { key: "esName", label: "name", language: "Spanish" },
+    { key: "esTitle", label: "headline", language: "Spanish" },
+    { key: "esIntro", label: "intro", language: "Spanish" },
+    { key: "esAbout", label: "about", language: "Spanish" },
+    { key: "esAvailability", label: "availability", language: "Spanish" },
+    { key: "esPrimaryCtaLabel", label: "primary CTA label", language: "Spanish" },
+    { key: "esSecondaryCtaLabel", label: "secondary CTA label", language: "Spanish" },
+    { key: "esFocusAreas", label: "focus areas", language: "Spanish" },
+    { key: "esStats", label: "stats", language: "Spanish" }
+  ]);
+
+  return input;
 }
 
 export async function getProjects() {

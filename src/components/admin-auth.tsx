@@ -3,13 +3,17 @@
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
+import { useResolvedLocale } from "@/components/locale-provider";
+import { siteCopy } from "@/lib/i18n";
+
 type AdminAuthProps = {
   mode: "setup" | "login";
-  copy: Record<string, unknown>;
 };
 
-export function AdminAuth({ mode, copy }: AdminAuthProps) {
+export function AdminAuth({ mode }: AdminAuthProps) {
   const router = useRouter();
+  const locale = useResolvedLocale();
+  const copy = siteCopy[locale];
   const [status, setStatus] = useState("");
   const [secret, setSecret] = useState("");
   const [confirmSecret, setConfirmSecret] = useState("");

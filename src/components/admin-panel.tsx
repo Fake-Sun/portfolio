@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { startTransition, useDeferredValue, useState } from "react";
 
-import { localizeProject, localizeSettings } from "@/lib/i18n";
+import { useResolvedLocale } from "@/components/locale-provider";
+import { localizeProject, localizeSettings, siteCopy } from "@/lib/i18n";
 import type { PortfolioSettings, Project } from "@/types/portfolio";
 
 type AdminPanelProps = {
   projects: Project[];
   settings: PortfolioSettings;
-  copy: Record<string, unknown>;
 };
 
 type ProjectFormState = {
@@ -50,6 +50,20 @@ type ProjectFormState = {
   featured: string;
 };
 
+type SettingsFormState = ReturnType<typeof settingsToForm>;
+
+type ProjectLocalizedRequirement = {
+  en: keyof ProjectFormState;
+  es: keyof ProjectFormState;
+  label: keyof typeof siteCopy.en;
+};
+
+type SettingsLocalizedRequirement = {
+  en: keyof SettingsFormState;
+  es: keyof SettingsFormState;
+  label: keyof typeof siteCopy.en;
+};
+
 const initialProjectForm: ProjectFormState = {
   slug: "",
   title: "",
@@ -87,6 +101,34 @@ const initialProjectForm: ProjectFormState = {
   accent: "",
   featured: "false"
 };
+
+const requiredProjectFields: ProjectLocalizedRequirement[] = [
+  { en: "title", es: "esTitle", label: "adminTitleLabel" },
+  { en: "tagline", es: "esTagline", label: "adminTagline" },
+  { en: "category", es: "esCategory", label: "adminCategory" },
+  { en: "status", es: "esStatus", label: "adminStatusLabel" },
+  { en: "client", es: "esClient", label: "adminClient" },
+  { en: "role", es: "esRole", label: "adminRoleLabel" },
+  { en: "duration", es: "esDuration", label: "adminDurationLabel" },
+  { en: "impact", es: "esImpact", label: "adminImpact" },
+  { en: "summary", es: "esSummary", label: "adminSummary" },
+  { en: "challenge", es: "esChallenge", label: "adminChallenge" },
+  { en: "solution", es: "esSolution", label: "adminSolution" },
+  { en: "services", es: "esServices", label: "adminServicesField" },
+  { en: "metrics", es: "esMetrics", label: "adminMetricsField" }
+];
+
+const requiredSettingsFields: SettingsLocalizedRequirement[] = [
+  { en: "name", es: "esName", label: "adminName" },
+  { en: "title", es: "esTitle", label: "adminHeadline" },
+  { en: "intro", es: "esIntro", label: "adminIntroLabel" },
+  { en: "about", es: "esAbout", label: "adminAboutLabel" },
+  { en: "availability", es: "esAvailability", label: "adminAvailabilityLabel" },
+  { en: "primaryCtaLabel", es: "esPrimaryCtaLabel", label: "adminPrimaryCtaLabel" },
+  { en: "secondaryCtaLabel", es: "esSecondaryCtaLabel", label: "adminSecondaryCtaLabel" },
+  { en: "focusAreas", es: "esFocusAreas", label: "adminFocusAreasField" },
+  { en: "stats", es: "esStats", label: "adminStatsField" }
+];
 
 function createProjectForm(overrides: Partial<ProjectFormState> = {}): ProjectFormState {
   return {
@@ -128,12 +170,33 @@ function settingsToForm(settings: PortfolioSettings) {
   };
 }
 
+function getMissingFields<T extends Record<string, string>>(
+  form: T,
+  fields: { en: keyof T; es: keyof T; label: keyof typeof siteCopy.en }[],
+  language: "en" | "es",
+  copy: typeof siteCopy.en
+) {
+  return fields
+    .filter((field) => !String(form[language === "en" ? field.en : field.es]).trim())
+    .map((field) => copy[field.label] as string);
+}
+
+function formatMissingFieldsMessage(copy: typeof siteCopy.en, language: "en" | "es", fields: string[]) {
+  const prefix =
+    language === "en"
+      ? (copy.adminMissingEnglishFields as string)
+      : (copy.adminMissingSpanishFields as string);
+
+  return `${prefix} ${fields.join(", ")}.`;
+}
+
 export function AdminPanel({
   projects,
-  settings,
-  copy
+  settings
 }: AdminPanelProps) {
   const router = useRouter();
+  const locale = useResolvedLocale();
+  const copy = siteCopy[locale];
   const [projectForm, setProjectForm] = useState(initialProjectForm);
   const [settingsForm, setSettingsForm] = useState(settingsToForm(settings));
   const [status, setStatus] = useState("");
@@ -154,6 +217,21 @@ export function AdminPanel({
 
   async function handleProjectSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const missingEnglishFields = getMissingFields(projectForm, requiredProjectFields, "en", copy);
+    if (missingEnglishFields.length > 0) {
+      setContentLanguage("en");
+      setStatus(formatMissingFieldsMessage(copy, "en", missingEnglishFields));
+      return;
+    }
+
+    const missingSpanishFields = getMissingFields(projectForm, requiredProjectFields, "es", copy);
+    if (missingSpanishFields.length > 0) {
+      setContentLanguage("es");
+      setStatus(formatMissingFieldsMessage(copy, "es", missingSpanishFields));
+      return;
+    }
+
     setStatus(copy.adminSavingProject as string);
 
     const response = await fetch("/api/projects", {
@@ -178,6 +256,21 @@ export function AdminPanel({
 
   async function handleSettingsSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const missingEnglishFields = getMissingFields(settingsForm, requiredSettingsFields, "en", copy);
+    if (missingEnglishFields.length > 0) {
+      setContentLanguage("en");
+      setStatus(formatMissingFieldsMessage(copy, "en", missingEnglishFields));
+      return;
+    }
+
+    const missingSpanishFields = getMissingFields(settingsForm, requiredSettingsFields, "es", copy);
+    if (missingSpanishFields.length > 0) {
+      setContentLanguage("es");
+      setStatus(formatMissingFieldsMessage(copy, "es", missingSpanishFields));
+      return;
+    }
+
     setStatus(copy.adminSavingSettings as string);
 
     const response = await fetch("/api/settings", {

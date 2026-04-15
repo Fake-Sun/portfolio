@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 
 import { AdminAuth } from "@/components/admin-auth";
 import { AdminPanel } from "@/components/admin-panel";
+import { AdminStorageDisabled } from "@/components/admin-storage-disabled";
 import { adminSessionCookieName } from "@/lib/admin-auth";
-import { isLocale, siteCopy, type Locale } from "@/lib/i18n";
+import { isLocale } from "@/lib/i18n";
 import {
   getPortfolioSettings,
   getProjects,
@@ -26,19 +27,8 @@ export default async function AdminPage({ params }: AdminPageProps) {
     notFound();
   }
 
-  const locale = lang as Locale;
-  const copy = siteCopy[locale];
-
   if (!isPersistenceAvailable()) {
-    return (
-      <section className="admin-auth-shell">
-        <div className="section-heading">
-          <span className="eyebrow">Portfolio CMS</span>
-          <h1>{copy.adminTitle as string}</h1>
-          <p>{copy.adminStorageDisabled as string}</p>
-        </div>
-      </section>
-    );
+    return <AdminStorageDisabled />;
   }
 
   const cookieStore = await cookies();
@@ -49,20 +39,14 @@ export default async function AdminPage({ params }: AdminPageProps) {
   ]);
 
   if (!hasAdminSecret) {
-    return <AdminAuth mode="setup" copy={copy} />;
+    return <AdminAuth mode="setup" />;
   }
 
   if (!isAuthenticated) {
-    return <AdminAuth mode="login" copy={copy} />;
+    return <AdminAuth mode="login" />;
   }
 
   const [projects, settings] = await Promise.all([getProjects(), getPortfolioSettings()]);
 
-  return (
-    <AdminPanel
-      projects={projects}
-      settings={settings}
-      copy={copy}
-    />
-  );
+  return <AdminPanel projects={projects} settings={settings} />;
 }
