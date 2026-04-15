@@ -10,6 +10,7 @@ type ProjectCardProps = {
 
 export function ProjectCard({ project, locale }: ProjectCardProps) {
   const copy = siteCopy[locale];
+  const metaItems = [project.role, project.client].filter(Boolean);
 
   return (
     <article className="project-card">
@@ -25,10 +26,13 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
       <div className="project-card__body">
         <h3>{project.title}</h3>
         <p>{project.tagline}</p>
-        <div className="project-card__meta">
-          <span>{project.role}</span>
-          <span>{project.client}</span>
-        </div>
+        {metaItems.length > 0 ? (
+          <div className="project-card__meta">
+            {metaItems.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        ) : null}
         <div className="project-card__footer">
           <span>{project.status}</span>
           <a href={`/${locale}/projects/${project.slug}`} className="project-card__link">

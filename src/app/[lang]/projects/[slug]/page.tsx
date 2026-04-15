@@ -11,6 +11,8 @@ import {
 import { getProjectBySlug, getProjects } from "@/lib/portfolio";
 import type { Project } from "@/types/portfolio";
 
+export const dynamic = "force-dynamic";
+
 type ProjectPageProps = {
   params: Promise<{ lang: string; slug: string }>;
 };

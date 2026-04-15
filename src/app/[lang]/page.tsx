@@ -9,6 +9,8 @@ import type { PortfolioSettings, Project } from "@/types/portfolio";
 import { getPortfolioSettings, getProjects } from "@/lib/portfolio";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 type HomePageProps = {
   params: Promise<{ lang: string }>;
 };
