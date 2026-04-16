@@ -493,20 +493,3 @@ export function localizeSettings(settings: PortfolioSettings, locale: Locale): P
     stats: translation?.stats || settings.stats
   };
 }
-
-export function getLocalizedPath(pathname: string, targetLocale: Locale) {
-  const segments = pathname.split("/").filter(Boolean);
-
-  if (segments.length === 0) {
-    return `/${targetLocale}`;
-  }
-
-  const [, ...rest] = isLocale(segments[0]) ? segments : [defaultLocale, ...segments];
-
-  if (rest[0] === "projects" && rest[1]) {
-    const canonicalSlug = getCanonicalProjectSlug(rest[1]);
-    return `/${targetLocale}/projects/${getLocalizedProjectSlug(canonicalSlug, targetLocale)}`;
-  }
-
-  return `/${targetLocale}/${rest.join("/")}`.replace(/\/$/, "");
-}

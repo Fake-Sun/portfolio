@@ -16,7 +16,7 @@ export function ProjectPageClient({ projectByLocale }: ProjectPageClientProps) {
 
   return (
     <div className="project-page">
-      <a href={`/${locale}`} className="back-link">
+      <a href="/" className="back-link">
         {copy.backToPortfolio as string}
       </a>
 

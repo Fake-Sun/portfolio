@@ -15,12 +15,12 @@ export function SiteChrome({ children }: SiteChromeProps) {
   return (
     <div className="site-shell">
       <header className="site-header">
-        <a href={`/${locale}`} className="brand-mark">
+        <a href="/" className="brand-mark">
           Lucas Monzón
         </a>
         <nav className="site-nav">
-          <a href={`/${locale}`}>{copy.navWork as string}</a>
-          <a href={`/${locale}/admin`}>{copy.navAdmin as string}</a>
+          <a href="/">{copy.navWork as string}</a>
+          <a href="/admin">{copy.navAdmin as string}</a>
           <LanguageSelector />
         </nav>
       </header>

@@ -11,7 +11,7 @@ type ProjectCardProps = {
 export function ProjectCard({ project, locale }: ProjectCardProps) {
   const copy = siteCopy[locale];
   const metaItems = [project.role, project.client].filter(Boolean);
-  const projectHref = `/${locale}/projects/${encodeURIComponent(project.slug)}`;
+  const projectHref = `/projects/${encodeURIComponent(project.slug)}`;
   const projectTitle = project.title || "Portfolio project";
 
   return (

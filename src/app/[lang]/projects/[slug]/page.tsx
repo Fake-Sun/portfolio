@@ -1,17 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { ProjectPageClient } from "@/components/project-page-client";
 import {
   getCanonicalProjectSlug,
-  getLocalizedProjectSlug,
   isLocale,
-  localizeProject,
-  type Locale
+  getLocalizedProjectSlug
 } from "@/lib/i18n";
-import { getProjectBySlug, getProjects } from "@/lib/portfolio";
-import type { Project } from "@/types/portfolio";
-
-export const dynamic = "force-dynamic";
+import { getProjects } from "@/lib/portfolio";
 
 type ProjectPageProps = {
   params: Promise<{ lang: string; slug: string }>;
@@ -33,18 +27,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  const locale = lang as Locale;
   const canonicalSlug = getCanonicalProjectSlug(slug);
-  const rawProject = await getProjectBySlug(canonicalSlug);
-
-  if (!rawProject) {
-    notFound();
-  }
-
-  const projectByLocale = {
-    en: localizeProject(rawProject, "en"),
-    es: localizeProject(rawProject, "es")
-  } satisfies Record<Locale, Project>;
-
-  return <ProjectPageClient projectByLocale={projectByLocale} />;
+  redirect(`/projects/${canonicalSlug}`);
 }

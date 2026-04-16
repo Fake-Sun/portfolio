@@ -14,11 +14,7 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   alternates: {
-    canonical: "/",
-    languages: {
-      en: "/en",
-      es: "/es"
-    }
+    canonical: "/"
   },
   icons: {
     icon: [
