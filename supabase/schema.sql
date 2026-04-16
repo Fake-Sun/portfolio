@@ -51,6 +51,11 @@ create table if not exists public.admin_sessions (
   expires_at timestamptz not null
 );
 
+alter table public.portfolio_settings enable row level security;
+alter table public.projects enable row level security;
+alter table public.admin_config enable row level security;
+alter table public.admin_sessions enable row level security;
+
 insert into storage.buckets (id, name, public)
 values ('portfolio-assets', 'portfolio-assets', true)
 on conflict (id) do nothing;
