@@ -2,9 +2,24 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 
+const siteDescription =
+  "Lucas Monzón portfolio showcasing full-stack software engineering, IT support, troubleshooting, deployment, and selected web projects.";
+
 export const metadata: Metadata = {
-  title: "Portfolio CMS",
-  description: "Next.js portfolio with a lightweight CMS for profile content, projects, and image uploads.",
+  metadataBase: new URL("https://lucasmonzon.dev"),
+  applicationName: "Lucas Monzón Portfolio",
+  title: {
+    default: "Lucas Monzón | Full Stack Software Engineer",
+    template: "%s | Lucas Monzón"
+  },
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: "/en",
+      es: "/es"
+    }
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -18,8 +33,16 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   openGraph: {
     title: "Lucas Monzón Portfolio",
-    description: "Software engineering portfolio and CMS.",
+    description: siteDescription,
+    url: "https://lucasmonzon.dev",
+    siteName: "Lucas Monzón Portfolio",
     images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Lucas Monzón logo" }]
+  },
+  twitter: {
+    card: "summary",
+    title: "Lucas Monzón | Full Stack Software Engineer",
+    description: siteDescription,
+    images: ["/icon-512.png"]
   }
 };
 

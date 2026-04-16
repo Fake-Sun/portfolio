@@ -12,6 +12,7 @@ export function ProjectPageClient({ projectByLocale }: ProjectPageClientProps) {
   const locale = useResolvedLocale();
   const copy = siteCopy[locale];
   const project = projectByLocale[locale];
+  const projectTitle = project.title || "Portfolio project";
 
   return (
     <div className="project-page">
@@ -33,7 +34,11 @@ export function ProjectPageClient({ projectByLocale }: ProjectPageClientProps) {
 
       {project.coverImage ? (
         <section className="project-media">
-          <img src={project.coverImage} alt={project.title} className="project-cover-image" />
+          <img
+            src={project.coverImage}
+            alt={`${projectTitle} cover preview`}
+            className="project-cover-image"
+          />
         </section>
       ) : null}
 
@@ -101,8 +106,13 @@ export function ProjectPageClient({ projectByLocale }: ProjectPageClientProps) {
 
       {project.galleryImages.length > 0 ? (
         <section className="gallery-grid">
-          {project.galleryImages.map((image) => (
-            <img key={image} src={image} alt={`${project.title} gallery image`} className="gallery-image" />
+          {project.galleryImages.map((image, index) => (
+            <img
+              key={image}
+              src={image}
+              alt={`${projectTitle} gallery image ${index + 1}`}
+              className="gallery-image"
+            />
           ))}
         </section>
       ) : null}

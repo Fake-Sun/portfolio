@@ -12,12 +12,17 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
   const copy = siteCopy[locale];
   const metaItems = [project.role, project.client].filter(Boolean);
   const projectHref = `/${locale}/projects/${encodeURIComponent(project.slug)}`;
+  const projectTitle = project.title || "Portfolio project";
 
   return (
     <article className="project-card">
       <div className="project-card__media" style={{ backgroundImage: project.accent }}>
         {project.coverImage ? (
-          <img src={project.coverImage} alt={project.title} className="project-card__image" />
+          <img
+            src={project.coverImage}
+            alt={`${projectTitle} project preview`}
+            className="project-card__image"
+          />
         ) : null}
         <div className="project-card__topline">
           <span>{project.category}</span>
