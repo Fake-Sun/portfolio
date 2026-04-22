@@ -2,6 +2,7 @@
 
 import { useResolvedLocale } from "@/components/locale-provider";
 import { siteCopy, type Locale } from "@/lib/i18n";
+import { normalizeHref } from "@/lib/urls";
 import type { Project } from "@/types/portfolio";
 
 type ProjectPageClientProps = {
@@ -123,13 +124,13 @@ export function ProjectPageClient({ projectByLocale }: ProjectPageClientProps) {
           {project.links.map((link) => (
             <a
               key={`${link.label}-${link.href}`}
-              href={link.href}
+              href={normalizeHref(link.href)}
               target="_blank"
               rel="noreferrer"
               className="project-link-card"
             >
               <span>{link.label}</span>
-              <strong>{link.href}</strong>
+              <strong>{normalizeHref(link.href)}</strong>
             </a>
           ))}
         </div>

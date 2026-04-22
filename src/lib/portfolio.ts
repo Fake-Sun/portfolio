@@ -3,6 +3,7 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import seedProjects from "@/data/projects.json";
+import { normalizeHref } from "@/lib/urls";
 import type {
   LocalizedPortfolioSettingsContent,
   LocalizedProjectContent,
@@ -411,7 +412,7 @@ function parseLinks(value: string | ProjectLink[]) {
       const [label, ...rest] = item.split(":");
       return {
         label: label?.trim() || "Link",
-        href: rest.join(":").trim() || "#"
+        href: normalizeHref(rest.join(":").trim())
       };
     });
 }
