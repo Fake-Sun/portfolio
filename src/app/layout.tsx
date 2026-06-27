@@ -1,9 +1,23 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Mono, Manrope } from "next/font/google";
 
 import "./globals.css";
 
 const siteDescription =
   "Lucas Monzón portfolio showcasing full-stack software engineering, IT support, troubleshooting, deployment, and selected web projects.";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap"
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
+  display: "swap"
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lucasmonzon.dev"),
@@ -48,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${manrope.variable} ${ibmPlexMono.variable}`}>
       <body>
         {children}
       </body>

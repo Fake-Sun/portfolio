@@ -12,8 +12,8 @@
   --danger: #ff9f80;
   --shadow: 0 30px 80px rgba(0, 0, 0, 0.32);
   --radius: 28px;
-  --font-sans: "Aptos", "Segoe UI Variable", "Trebuchet MS", sans-serif;
-  --font-mono: "Consolas", "SFMono-Regular", monospace;
+  --font-sans-fallback: "Aptos", "Segoe UI Variable", "Trebuchet MS", sans-serif;
+  --font-mono-fallback: "Consolas", "SFMono-Regular", monospace;
 }
 
 * {
@@ -28,7 +28,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), var(--font-sans-fallback);
   background:
     radial-gradient(circle at top left, rgba(239, 142, 61, 0.12), transparent 20%),
     radial-gradient(circle at right 18%, rgba(125, 132, 141, 0.12), transparent 22%),
