@@ -87,7 +87,7 @@ export function HomePageClient({ settingsByLocale, projectsByLocale }: HomePageC
 
         <aside className="hero-aside">
           <div className="portrait-card portrait-card--hero">
-            <img src="/uploads/01.jpg" alt="Lucas Monzón portrait" className="portrait-image" />
+            <img src="/uploads/lucas-portrait-smiling.png" alt="Lucas Monzón portrait" className="portrait-image" />
           </div>
           <div className="stats-grid">
             {settings.stats.map((stat) => (
@@ -122,7 +122,7 @@ export function HomePageClient({ settingsByLocale, projectsByLocale }: HomePageC
 
       <section className="about-visual">
         <div className="about-visual__image">
-          <img src="/uploads/dev-lucas-03.jpg" alt="Lucas Monzón profile" className="about-profile-image" />
+          <img src="/uploads/lucas-portrait-formal.png" alt="Lucas Monzón profile" className="about-profile-image" />
         </div>
         <div className="about-visual__copy">
           <span className="eyebrow">{copy.whoIAm as string}</span>
