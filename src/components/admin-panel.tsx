@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 import { startTransition, useDeferredValue, useState } from "react";
 
 import { useResolvedLocale } from "@/components/locale-provider";
+import { AdminImagePreview } from "@/components/admin-image-preview";
+import { AdminMediaEditor, AdminSitePortraits } from "@/components/admin-media-editor";
 import { localizeProject, localizeSettings, siteCopy } from "@/lib/i18n";
+import { mediaCopy } from "@/lib/media-copy";
 import type { PortfolioSettings, Project } from "@/types/portfolio";
 
 type AdminPanelProps = {
@@ -205,6 +208,8 @@ export function AdminPanel({
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"projects" | "settings">("projects");
   const [contentLanguage, setContentLanguage] = useState<"en" | "es">("en");
+  const [mediaSession, setMediaSession] = useState(0);
+  const [isMediaUploading, setIsMediaUploading] = useState(false);
   const filteredSearch = useDeferredValue(search);
 
   const filteredProjects = projects.filter((project) => {
@@ -219,6 +224,11 @@ export function AdminPanel({
 
   async function handleProjectSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isMediaUploading) {
+      setStatus(mediaCopy[locale].waitUpload);
+      return;
+    }
 
     const missingEnglishFields = getMissingFields(projectForm, requiredProjectFields, "en", copy);
     if (missingEnglishFields.length > 0) {
@@ -253,6 +263,7 @@ export function AdminPanel({
 
     setStatus(copy.adminProjectSaved as string);
     setProjectForm(initialProjectForm);
+    setMediaSession((current) => current + 1);
     startTransition(() => router.refresh());
   }
 
@@ -312,42 +323,9 @@ export function AdminPanel({
     startTransition(() => router.refresh());
   }
 
-  async function uploadImage(file: File, target: "cover" | "gallery") {
-    setStatus(
-      target === "cover"
-        ? (copy.adminUploadingCover as string)
-        : (copy.adminUploadingGallery as string)
-    );
-
-    const body = new FormData();
-    body.append("file", file);
-
-    const response = await fetch("/api/uploads", {
-      method: "POST",
-      body
-    });
-
-    const payload = (await response.json()) as { error?: string; url?: string };
-
-    if (!response.ok || !payload.url) {
-      setStatus(payload.error ?? "Unable to upload image.");
-      return;
-    }
-
-    if (target === "cover") {
-      setProjectForm((current) => ({ ...current, coverImage: payload.url ?? "" }));
-    } else {
-      setProjectForm((current) => ({
-        ...current,
-        galleryImages: [current.galleryImages, payload.url].filter(Boolean).join("\n")
-      }));
-    }
-
-    setStatus(copy.adminImageUploaded as string);
-  }
-
   function loadProject(project: Project) {
     const spanishProject = localizeProject(project, "es");
+    setMediaSession((current) => current + 1);
 
     setProjectForm(createProjectForm({
       originalSlug: project.slug,
@@ -397,6 +375,7 @@ export function AdminPanel({
   }
 
   function startNewProject() {
+    setMediaSession((current) => current + 1);
     setProjectForm(createProjectForm());
     setActiveTab("projects");
     setContentLanguage("en");
@@ -504,47 +483,15 @@ export function AdminPanel({
                 <option value="true">true</option>
               </select>
             </label>
-            <label className="full-span">
-              <span>{copy.adminCoverImage as string}</span>
-              <input
-                value={projectForm.coverImage}
-                onChange={(event) =>
-                  setProjectForm((current) => ({ ...current, coverImage: event.target.value }))
-                }
-              />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    void uploadImage(file, "cover");
-                  }
-                }}
-              />
-            </label>
-            <label className="full-span">
-              <span>{copy.adminGalleryImages as string}</span>
-              <textarea
-                rows={4}
-                placeholder={copy.adminGalleryHelp as string}
-                value={projectForm.galleryImages}
-                onChange={(event) =>
-                  setProjectForm((current) => ({ ...current, galleryImages: event.target.value }))
-                }
-              />
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(event) => {
-                  const files = Array.from(event.target.files ?? []);
-                  for (const file of files) {
-                    void uploadImage(file, "gallery");
-                  }
-                }}
-              />
-            </label>
+            <AdminMediaEditor
+              key={mediaSession}
+              coverImage={projectForm.coverImage}
+              galleryImages={projectForm.galleryImages}
+              onCoverChange={(url) => setProjectForm((current) => ({ ...current, coverImage: url }))}
+              onGalleryChange={(urls) => setProjectForm((current) => ({ ...current, galleryImages: urls.join("\n") }))}
+              onGalleryTextChange={(text) => setProjectForm((current) => ({ ...current, galleryImages: text }))}
+              onBusyChange={setIsMediaUploading}
+            />
             <label>
               <span>{copy.adminStack as string}</span>
               <textarea
@@ -748,7 +695,7 @@ export function AdminPanel({
               />
             </label>
             <div className="admin-actions">
-              <button type="submit">{copy.adminSaveProject as string}</button>
+              <button type="submit" disabled={isMediaUploading}>{copy.adminSaveProject as string}</button>
               <button type="button" onClick={startNewProject}>
                 {copy.adminResetForm as string}
               </button>
@@ -757,6 +704,7 @@ export function AdminPanel({
           </form>
         ) : (
           <form className="admin-form" onSubmit={handleSettingsSubmit}>
+            <AdminSitePortraits />
             <div className="admin-form-section">
               <h3>{copy.adminSharedFields as string}</h3>
             </div>
@@ -946,12 +894,15 @@ export function AdminPanel({
         <div className="admin-projects">
           {filteredProjects.map((project) => (
             <article key={project.slug} className="admin-project-card">
-              <div>
+              <div className="admin-project-summary">
+                <AdminImagePreview src={project.coverImage} label={`${mediaCopy[locale].thumbnail}: ${project.title}`} usage="cover" compact />
+                <div>
                 <p>
                   {project.year} / {project.category}
                 </p>
                 <h3>{project.title}</h3>
                 <span>{project.client || "Independent project"}</span>
+                </div>
               </div>
               <div className="admin-project-actions">
                 <button type="button" className="admin-btn" onClick={() => loadProject(project)}>

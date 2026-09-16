@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { buttonVariants } from "@/components/ui/button";
 import { designCopy } from "@/lib/design-copy";
 import { siteCopy, type Locale } from "@/lib/i18n";
+import { siteImages } from "@/lib/media";
 import type { PortfolioSettings, Project } from "@/types/portfolio";
 
 type HomePageClientProps = {
@@ -60,7 +61,7 @@ export function HomePageClient({ settingsByLocale, projectsByLocale }: HomePageC
           <div className="portrait-orbit portrait-orbit--two" aria-hidden="true" />
           <Parallax className="portrait-stage" distance={28}>
             <div className="portrait-frame">
-              <img src="/uploads/lucas-portrait-formal.png" alt={design.portrait}
+              <img src={siteImages.heroPortrait} alt={design.portrait}
                 width={1086} height={1448} fetchPriority="high" />
               <div className="portrait-caption"><span>Lucas Monzón</span><ArrowUpRight size={18} aria-hidden="true" /></div>
             </div>
@@ -119,7 +120,7 @@ export function HomePageClient({ settingsByLocale, projectsByLocale }: HomePageC
       <section id="about" className="about-section" aria-labelledby="about-title">
         <div className="about-photo-column">
           <Parallax className="about-photo" distance={22}>
-            <img src="/uploads/lucas-portrait-smiling.png" alt={design.smilingPortrait} width={1086} height={1448} loading="lazy" />
+            <img src={siteImages.aboutPortrait} alt={design.smilingPortrait} width={1086} height={1448} loading="lazy" />
           </Parallax>
           <div className="photo-footnote"><Globe2 size={16} aria-hidden="true" /><span>{settings.location}</span><span>LM.</span></div>
         </div>

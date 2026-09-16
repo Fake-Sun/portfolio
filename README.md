@@ -60,6 +60,16 @@ The app will seed its initial content from [src/data/projects.json](./src/data/p
 
 ## Content model
 
+### Image editor
+
+The project editor shows cover/gallery previews, actual pixel dimensions, aspect ratios, and resolution guidance. Upload or replace images, add multiple gallery files, reorder them, remove them from the draft, or edit their URLs. Save the project to publish changes. Removing a reference does not delete the file from storage.
+
+- Covers: recommended 2400 x 1500 px (16:10). Other proportions work but leave space in the project card.
+- Gallery: recommended 1600 px wide, keeping the original proportions.
+- Homepage portraits: recommended 1200 x 1600 px (3:4). Profile settings show the current images for reference; their shared paths are defined in `src/lib/media.ts`, not edited by the settings form.
+
+These are recommendations, not required dimensions. Low-resolution warnings do not block saving. Image controls are shared between English and Spanish; the interface follows the selected language. Uploads show local previews and progress, and project saving is disabled while files upload. Switching projects cancels any pending upload for the old draft.
+
 Projects support:
 
 - client, role, and duration
