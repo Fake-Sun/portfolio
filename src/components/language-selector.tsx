@@ -5,6 +5,7 @@ import {
   localeCookieName
 } from "@/lib/i18n";
 import { usePublicLocale } from "@/components/locale-provider";
+import { Button } from "@/components/ui/button";
 
 const flagByLocale: Record<Locale, { src: string; alt: string; next: Locale; title: string }> = {
   en: {
@@ -31,7 +32,9 @@ export function LanguageSelector() {
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="sm"
       type="button"
       className="language-toggle"
       onClick={handleToggle}
@@ -40,6 +43,6 @@ export function LanguageSelector() {
     >
       <img key={locale} src={current.src} alt={current.alt} className="language-toggle__flag" />
       <span className="language-toggle__label">{locale.toUpperCase()}</span>
-    </button>
+    </Button>
   );
 }

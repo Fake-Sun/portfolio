@@ -16,6 +16,16 @@ npm install
 npm run dev
 ```
 
+## Visual system
+
+The interface uses shadcn-compatible Base UI components, Tailwind CSS v4, Lucide icons, and Motion for scroll effects. The component registry is configured in `components.json`; reusable components live in `src/components/ui`.
+
+`src/app/portfolio.css` contains the public layout and CMS visual refinements. `src/lib/design-copy.ts` holds the additional English/Spanish interface labels. Profile content, project content, authentication, and uploads continue to use the existing CMS and Supabase implementation.
+
+Parallax is disabled on small screens and when reduced motion is requested. Floating accents stop after their introductory animation. The page remains readable before JavaScript loads.
+
+Run `npm run typecheck -- --incremental false` for type validation. Use the development server to review the layout; a production build is not required for routine visual changes.
+
 ## Environment
 
 Copy `.env.example` to `.env.local` and set:

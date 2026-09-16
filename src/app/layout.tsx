@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
 
 import "./globals.css";
+import "./portfolio.css";
 
 const siteDescription =
   "Lucas Monzón portfolio showcasing full-stack software engineering, IT support, troubleshooting, deployment, and selected web projects.";
