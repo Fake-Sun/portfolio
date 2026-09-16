@@ -16,7 +16,7 @@
 }
 
 body {
-  background: radial-gradient(ellipse at 85% 8%, #39302624, transparent 35%), var(--bg);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -29,14 +29,31 @@ img { max-width: 100%; }
 .portfolio-shell { width: min(1200px, calc(100% - 80px)); padding: 0 0 24px; }
 .portfolio-header {
   top: 0;
-  min-height: 82px;
+  isolation: isolate;
   margin: 0;
-  padding: 14px 0;
+  padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--line);
   border-radius: 0;
-  background: #151515e8;
+  background: transparent;
+  backdrop-filter: none;
+}
+.portfolio-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -24px;
+  z-index: -1;
+  pointer-events: none;
+  background: #151515ed;
   backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 24px), transparent 100%);
+}
+.portfolio-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 82px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
 }
 .portfolio-header .brand-mark { gap: 8px; font-size: 15px; letter-spacing: -0.04em; }
 .portfolio-header .brand-mark__logo { width: 38px; height: 38px; object-fit: contain; }
@@ -99,7 +116,7 @@ img { max-width: 100%; }
 .portrait-orbit { position: absolute; width: 410px; height: 410px; max-width: 110%; left: 0; top: 0; border: 1px solid #f39b622e; border-radius: 50%; transform: rotate(-35deg) scaleX(1.12); }
 .portrait-orbit--two { top: 60px; left: 30px; border-color: #ffffff0d; transform: rotate(25deg) scaleX(1.12); }
 .portrait-orbit--one::after { content: ""; position: absolute; top: 25%; right: 5%; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 22px #f39b6260; }
-.floating-note { position: absolute; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 15px 18px; background: #252522f2; border: 1px solid #ffffff22; border-radius: 10px; box-shadow: 0 12px 35px #0002; font: 10px/1.5 var(--font-mono), monospace; animation: portfolio-float 4s ease-in-out 1; }
+.floating-note { position: absolute; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 15px 18px; background: #252522f2; border: 1px solid #ffffff22; border-radius: 10px; box-shadow: 0 12px 35px #0002; font: 10px/1.5 var(--font-mono), monospace; animation: portfolio-float 6s ease-in-out infinite; }
 .floating-note svg { color: var(--accent); }
 .floating-note--code { top: 22%; left: -10px; transform: rotate(-6deg); }
 .floating-note--stack { bottom: 52px; right: 0; animation-delay: -2s; transform: rotate(3deg); }
@@ -306,7 +323,8 @@ img { max-width: 100%; }
 
 @media (max-width: 760px) {
   .portfolio-shell { width: calc(100% - 36px); }
-  .portfolio-header { min-height: 68px; padding: 10px 0; flex-direction: row; align-items: center; }
+  .portfolio-header { flex-direction: row; align-items: center; }
+  .portfolio-header__inner { min-height: 68px; padding: 10px 0; }
   .portfolio-header .desktop-navigation { display: none; }
   .ui-button.mobile-menu-trigger { display: inline-flex; }
   .portfolio-header .brand-mark { font-size: 14px; }

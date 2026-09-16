@@ -27,9 +27,10 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="site-shell portfolio-shell" id="top">
+      <div className="portfolio-site" id="top">
         <a href="#main-content" className="skip-link">{design.skipContent}</a>
         <header className="site-header portfolio-header">
+          <div className="site-shell portfolio-shell portfolio-header__inner">
           <a href="/" className="brand-mark">
             <img src="/icon-192.png" alt="" className="brand-mark__logo" width={38} height={38} aria-hidden="true" />
             <span>Lucas Monzón<span className="brand-period">.</span></span>
@@ -56,7 +57,9 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
               </Dialog.Portal>
             </Dialog.Root>
           </div>
+          </div>
         </header>
+        <div className="site-shell portfolio-shell">
         <main id="main-content" tabIndex={-1}>{children}</main>
         <footer className="site-footer portfolio-footer">
           <div className="footer-identity"><span>Lucas Monzón<span className="brand-period">.</span></span><p>{design.builtWith}</p></div>
@@ -67,6 +70,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
           </div>
           <a href="#top" className="back-to-top" aria-label={design.backTop} title={design.backTop}><ArrowUp size={19} aria-hidden="true" /></a>
         </footer>
+        </div>
       </div>
     </MotionConfig>
   );

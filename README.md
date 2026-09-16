@@ -22,7 +22,7 @@ The interface uses shadcn-compatible Base UI components, Tailwind CSS v4, Lucide
 
 `src/app/portfolio.css` contains the public layout and CMS visual refinements. `src/lib/design-copy.ts` holds the additional English/Spanish interface labels. Profile content, project content, authentication, and uploads continue to use the existing CMS and Supabase implementation.
 
-Parallax is disabled on small screens and when reduced motion is requested. Floating accents stop after their introductory animation. The page remains readable before JavaScript loads.
+Parallax and floating animations are disabled on small screens and when reduced motion is requested. On desktop, floating accents loop continuously. The page remains readable before JavaScript loads.
 
 Run `npm run typecheck -- --incremental false` for type validation. Use the development server to review the layout; a production build is not required for routine visual changes.
 
