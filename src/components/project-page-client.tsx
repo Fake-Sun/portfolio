@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 import { useResolvedLocale } from "@/components/locale-provider";
 import { Reveal } from "@/components/portfolio-motion";
+import { ProjectGallery } from "@/components/project-gallery";
 import { buttonVariants } from "@/components/ui/button";
 import { designCopy } from "@/lib/design-copy";
 import { siteCopy, type Locale } from "@/lib/i18n";
@@ -62,12 +63,7 @@ export function ProjectPageClient({ projectByLocale }: { projectByLocale: Record
         <dl>{project.metrics.map((metric) => <div key={metric.label}><dt>{metric.label}</dt><dd>{metric.value}</dd></div>)}</dl>
       </section>}
 
-      {project.galleryImages.length > 0 && <section className="case-gallery" aria-labelledby="gallery-title">
-        <div className="section-heading-row"><div><span className="section-kicker">{design.gallery}</span><h2 id="gallery-title">{project.title}</h2></div></div>
-        <div className="case-gallery__grid">{project.galleryImages.map((image, index) => <Reveal key={`${image}-${index}`}>
-          <figure><img src={image} alt={`${project.title}: ${design.gallery} ${index + 1}`} loading="lazy" /><figcaption>{String(index + 1).padStart(2, "0")} / {project.title}</figcaption></figure>
-        </Reveal>)}</div>
-      </section>}
+      <ProjectGallery key={project.slug} images={project.galleryImages} title={project.title} />
 
       {project.links.length > 0 && <section className="case-links" aria-labelledby="links-title">
         <h2 id="links-title">{copy.relevantLinks}</h2>

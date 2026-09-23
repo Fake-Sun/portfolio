@@ -24,6 +24,8 @@ The interface uses shadcn-compatible Base UI components, Tailwind CSS v4, Lucide
 
 Parallax and floating animations are disabled on small screens and when reduced motion is requested. On desktop, floating accents loop continuously. The page remains readable before JavaScript loads.
 
+Project gallery images open in an accessible viewer with previous/next controls, arrow-key navigation, Escape to close, and original-size viewing for detailed screenshots. Images retain their proportions; the viewer uses the existing Base UI dialog and follows the selected language.
+
 Run `npm run typecheck -- --incremental false` for type validation. Use the development server to review the layout; a production build is not required for routine visual changes.
 
 ## Environment
