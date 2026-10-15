@@ -20,6 +20,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigation = [
     { href: "/#featured", label: copy.navWork },
+    { href: "/services", label: locale === "es" ? "Servicios" : "Services" },
     { href: "/#expertise", label: design.expertise },
     { href: "/#about", label: design.about },
     { href: "/admin", label: copy.navAdmin }
